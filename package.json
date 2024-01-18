@@ -1,0 +1,11 @@
+{
+    "name": "dg-tools",
+    "scripts": {
+        "publish": "echo publish"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.5",
+        "tsx": "^4.7.0",
+        "typescript": "^5.3.3"
+    }
+}
