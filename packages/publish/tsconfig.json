@@ -1,9 +1,9 @@
 {
     "compilerOptions": {
-        "outDir": "./dist/",
         "module": "commonjs",
         "target": "esnext",
         "lib": ["esnext"],
+        "resolveJsonModule": true,
         "declaration": true,
         "strict": true,
         "noImplicitAny": true,
@@ -20,7 +20,7 @@
         "preserveConstEnums": true,
         "moduleResolution": "node"
     },
-    "include": ["src"],
+    "include": ["src", "test"],
     "exclude": ["node_modules"]
 }
 
