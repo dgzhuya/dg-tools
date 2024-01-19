@@ -12,7 +12,10 @@
 	"keywords": [
 		"publish",
 		"commit",
-		"workspace"
+		"workspace",
+		"tools",
+		"facility",
+		"cli"
 	],
 	"author": "dgzhuya",
 	"license": "ISC",
