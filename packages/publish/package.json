@@ -3,13 +3,17 @@
 	"version": "1.0.3",
 	"description": "a tool to help publish",
 	"bin": {
-		"dup": "dist/index.js"
+		"biu": "dist/index.js"
 	},
 	"scripts": {
 		"dev": "tsx src/index.ts -o -c",
 		"build": "tsx script/build.ts"
 	},
-	"keywords": [],
+	"keywords": [
+		"publish",
+		"commit",
+		"workspace"
+	],
 	"author": "dgzhuya",
 	"license": "ISC",
 	"devDependencies": {
