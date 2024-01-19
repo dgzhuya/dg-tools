@@ -14,7 +14,7 @@ const buildFile = async (rootPath = cwd()) => {
 			tsconfig: join(rootPath, 'tsconfig.json'),
 			outfile: join(rootPath, 'dist/index.js'),
 			platform: 'node',
-			external: ['shelljs', '@types/shelljs', 'chalk', 'esbuild', 'tsx']
+			external: ['shelljs', '@types/shelljs', 'esbuild', 'tsx']
 		})
 	} catch (error) {}
 }
