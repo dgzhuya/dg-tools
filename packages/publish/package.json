@@ -1,6 +1,6 @@
 {
 	"name": "@biuxiu/publish",
-	"version": "1.0.3",
+	"version": "1.1.4",
 	"description": "a tool to help publish",
 	"bin": {
 		"biu": "dist/index.js"
@@ -9,11 +9,7 @@
 		"dev": "tsx src/index.ts -o -c",
 		"build": "tsx script/build.ts"
 	},
-	"keywords": [
-		"publish",
-		"commit",
-		"workspace"
-	],
+	"keywords": ["publish", "commit", "workspace"],
 	"author": "dgzhuya",
 	"license": "ISC",
 	"devDependencies": {
