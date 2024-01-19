@@ -1,18 +1,18 @@
 import { input } from '@inquirer/prompts'
 import { execAsync, printLoading } from '../utils'
-import { PackageInfo } from '../option'
+import { XiuContext } from '../option'
 
-export const uploadHandler = async (pkg: PackageInfo, opt?: boolean) => {
+export const uploadHandler = async (ctx: XiuContext) => {
 	let command =
 		'npm publish --access=public --registry=https://registry.npmjs.org '
 	let close: Function | undefined
 	try {
-		if (opt) {
+		if (ctx.otp) {
 			const otpCode = await input({ message: '请输入单次验证码: ' })
 			command += `--otp=${otpCode}`
 		}
 		close = printLoading('上传中')
-		await execAsync(command, pkg.path)
+		await execAsync(command, ctx.pkg?.path)
 		close()
 	} catch (error) {
 		if (close) close()
