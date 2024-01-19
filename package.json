@@ -1,13 +1,14 @@
 {
-    "name": "dg-tools",
-    "scripts": {
-        "publish": "tsx packages/publish/src/index.ts -o -w packages -c"
-    },
-    "devDependencies": {
-        "@types/node": "^20.11.5",
-        "tsx": "^4.7.0",
-        "typescript": "^5.3.3",
-        "vitest": "^1.2.1"
-    }
+	"name": "dg-tools",
+	"scripts": {
+		"publish": "xiu -o -w packages -c"
+	},
+	"devDependencies": {
+		"@biuxiu/publish": "workspace:^",
+		"@types/node": "^20.11.5",
+		"tsx": "^4.7.0",
+		"typescript": "^5.3.3",
+		"vitest": "^1.2.1"
+	}
 }
 
