@@ -1,5 +1,5 @@
-import { format, Options } from 'prettier'
 import { writeFileSync } from 'node:fs'
+import { format, Options, resolveConfig, resolveConfigFile } from 'prettier'
 
 const defaultConfig: Options = {
 	useTabs: true,
@@ -19,9 +19,13 @@ export const formatPkg = async (
 	path: string,
 	config: Options = {}
 ) => {
+	const file = await resolveConfigFile(path)
+	const options = file ? await resolveConfig(file) : {}
+
 	const formatted = await format(text, {
 		...defaultConfig,
 		...config,
+		...options,
 		parser: 'json'
 	})
 	writeFileSync(path, formatted)
