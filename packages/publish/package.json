@@ -1,9 +1,9 @@
 {
 	"name": "@biuxiu/publish",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "a tool to help publish",
 	"bin": {
-		"publish": "dist/index.js"
+		"dup": "dist/index.js"
 	},
 	"scripts": {
 		"dev": "tsx src/index.ts -o -c",
