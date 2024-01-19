@@ -3,9 +3,14 @@
 ## 使用说明
 1. 安装
 ```sh
-    pnpm add -D @biuxiu/publish
+pnpm add -D @biuxiu/publish
 ```
 2. 使用方式
+   1. 查看版本信息
+    ```sh
+    pnpm xiu -v
+    ```
+   2. 查看命令提示
 3. 参数说明
    1. 设置workspace
    2. 设置是否添加提交
