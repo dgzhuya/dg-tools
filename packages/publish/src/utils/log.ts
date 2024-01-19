@@ -1,9 +1,8 @@
-import chalk from 'chalk'
-
 export const logger = (
 	msg: string | unknown,
 	status: 'success' | 'fail' = 'success'
 ) => {
+	const chalk = require('chalk')
 	if (status === 'success') {
 		console.log(chalk.green(msg))
 	} else {
