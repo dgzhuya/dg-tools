@@ -9,7 +9,7 @@ export const publishHandler = async (option: PublishOption) => {
 	try {
 		const pkg = await pkgInfoHandler(option.work)
 		await versionHandler(pkg)
-		await uploadHandler(option.otp)
+		await uploadHandler(pkg, option.otp)
 		await commitHandler(pkg, option.commit)
 	} catch (error) {
 		logger(error, 'fail')
