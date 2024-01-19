@@ -37,5 +37,8 @@ export const versionHandler = async (pkg: PackageInfo) => {
 const updateVersion = (list: number[], index = 0, step = 1) => {
 	const newList = [...list]
 	newList[index] += step
+	for (let i = index + 1; i < newList.length; i++) {
+		newList[i] = 0
+	}
 	return newList.join('.')
 }
