@@ -9,7 +9,11 @@
 		"dev": "tsx src/index.ts -o -c",
 		"build": "tsx script/build.ts"
 	},
-	"keywords": ["publish", "commit", "workspace"],
+	"keywords": [
+		"publish",
+		"commit",
+		"workspace"
+	],
 	"author": "dgzhuya",
 	"license": "ISC",
 	"devDependencies": {
