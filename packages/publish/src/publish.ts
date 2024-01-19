@@ -1,31 +1,18 @@
 import { PublishOption } from './option'
-import { checkGit, checkProjectGit, logger } from './utils'
+import { logger } from './utils'
 import { pkgInfoHandler } from './handler/pkgHandler'
 import { versionHandler } from './handler/versionHandler'
+import { uploadHandler } from './handler/uploadHandler'
+import { commitHandler } from './handler/commitHandler'
 
 export const publishHandler = async (option: PublishOption) => {
-    let command = 'npm publish --access=public --registry=registry.npmjs.org '
-    try {
-        const pkg = await pkgInfoHandler(option.work)
-        await versionHandler(pkg)
-        console.log('pkg: ', pkg)
-    } catch (error) {
-        logger(error, 'fail')
-        return
-    }
-
-    if (option.commit) {
-        try {
-            await checkGit()
-            await checkProjectGit()
-        } catch (error) {
-            logger(error, 'fail')
-            return
-        }
-    }
-
-    if (option.otp) {
-        // const otpCode = await input({ message: '请输入二次验证码' })
-        command += `--otp=${111}`
-    }
+	try {
+		const pkg = await pkgInfoHandler(option.work)
+		await versionHandler(pkg)
+		await uploadHandler(option.otp)
+		await commitHandler(pkg, option.commit)
+	} catch (error) {
+		logger(error, 'fail')
+		return
+	}
 }
