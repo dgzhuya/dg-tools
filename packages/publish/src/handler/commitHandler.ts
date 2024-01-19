@@ -9,7 +9,7 @@ export const commitHandler = async (pkg: PackageInfo, commit?: boolean) => {
 			await checkProjectGit()
 			const commitInfo = await input({
 				message: '请输入提交信息: ',
-				default: `✨ feat: 发布版本${pkg.v}`
+				default: `🔧 build: 发布版本${pkg.v}`
 			})
 			gitCommit(commitInfo, [pkg.path])
 		} catch (error) {

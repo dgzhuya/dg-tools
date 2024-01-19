@@ -8,7 +8,7 @@ import { commitHandler } from './handler/commitHandler'
 export const publishHandler = async (option: PublishOption) => {
 	try {
 		const pkg = await pkgInfoHandler(option.work)
-		await versionHandler(pkg)
+		pkg.v = await versionHandler(pkg)
 		await uploadHandler(pkg, option.otp)
 		await commitHandler(pkg, option.commit)
 	} catch (error) {

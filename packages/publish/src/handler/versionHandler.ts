@@ -26,7 +26,7 @@ export const versionHandler = async (pkg: PackageInfo) => {
 			const data = JSON.parse(text)
 			data.version = newVersion
 			await formatPkg(JSON.stringify(data, null, 2), jsonPath)
-			return
+			return newVersion
 		} catch (error) {
 			throw error
 		}
