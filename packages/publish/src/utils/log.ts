@@ -8,9 +8,7 @@ export const logger = (
 		console.log('\x1b[31m', msg)
 	}
 }
-logger('1111')
 
-logger('2222', 'fail')
 export const printLoading = (msg: string) => {
 	let status: 1 | 2 | 3 | 4 = 1
 	const id = setInterval(() => {
