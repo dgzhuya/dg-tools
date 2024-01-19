@@ -2,14 +2,15 @@ export const logger = (
 	msg: string | unknown,
 	status: 'success' | 'fail' = 'success'
 ) => {
-	const chalk = require('chalk')
 	if (status === 'success') {
-		console.log(chalk.green(msg))
+		console.log('\x1b[32m', msg)
 	} else {
-		console.log(chalk.red(msg))
+		console.log('\x1b[31m', msg)
 	}
 }
+logger('1111')
 
+logger('2222', 'fail')
 export const printLoading = (msg: string) => {
 	let status: 1 | 2 | 3 | 4 = 1
 	const id = setInterval(() => {
