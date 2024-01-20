@@ -37,5 +37,9 @@ class Xiu {
 }
 
 export const createXiu = (option: XiuOption = {}) => {
-	return new Xiu({ cwdPath: cwd(), ...option })
+	return new Xiu({
+		registry: 'https://registry.npmjs.org',
+		cwdPath: cwd(),
+		...option
+	})
 }
