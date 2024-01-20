@@ -1,6 +1,6 @@
 {
 	"name": "@biuxiu/publish",
-	"version": "1.1.5",
+	"version": "1.2.5",
 	"description": "a tool to help publish",
 	"bin": {
 		"xiu": "dist/index.js"
