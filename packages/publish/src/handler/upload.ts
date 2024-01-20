@@ -16,12 +16,18 @@ export const uploadHandler = async (ctx: XiuContext) => {
 	}
 
 	let close: Function | undefined
+	let timer: NodeJS.Timeout | undefined
 	try {
 		close = printLoading('上传中')
+		timer = setTimeout(() => {
+			throw new XiuError('40000')
+		}, 20000)
 		await execAsync(command, ctx.pkg?.path)
 		close()
+		clearTimeout(timer)
 	} catch (error) {
 		if (close) close()
+		if (timer) clearTimeout(timer)
 		throw new XiuError('41000', `${ctx.pkg?.name}@${ctx.pkg?.v}`)
 	}
 }
