@@ -2,8 +2,8 @@ export interface XiuOption {
 	otp?: boolean
 	commit?: boolean
 	space?: string
-	build?: string
-	hook?: boolean
+	build?: boolean
+	hook?: string
 }
 
 export interface PackageInfo {

@@ -2,12 +2,12 @@ import { Command } from 'commander'
 import pkg from '../package.json'
 import { XiuOption } from './option'
 import { createXiu } from './xiu'
-import { pkgInfoHandler } from './handler/pkgHandler'
-import { versionHandler } from './handler/versionHandler'
-import { hookHandler } from './handler/hookHandler'
-import { uploadHandler } from './handler/uploadHandler'
-import { commitHandler } from './handler/commitHandler'
-import { loggerHandler } from './handler/loggerHandler'
+import { pkgInfoHandler } from './handler/pkg'
+import { versionHandler } from './handler/version'
+import { hookHandler } from './handler/hook'
+import { uploadHandler } from './handler/upload'
+import { commitHandler } from './handler/commit'
+import { loggerHandler } from './handler/logger'
 
 const program = new Command()
 
@@ -18,8 +18,8 @@ program
 	.option('-o, --otp', 'use npm publish otp')
 	.option('-s, --space <dir>', 'use workspeace')
 	.option('-c, --commit', 'git commit this time publish')
-	.option('-h, --hook', 'run build command before publish')
-	.option('-b, --build <command>', 'run your command before publish')
+	.option('-b, --build', 'run build command before publish')
+	.option('-h, --hook <command>', 'run your command before publish')
 	.action((option: XiuOption) => {
 		const app = createXiu(option)
 		app.use(loggerHandler)
