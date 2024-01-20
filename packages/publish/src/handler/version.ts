@@ -29,7 +29,6 @@ export const versionHandler = async (ctx: XiuContext) => {
 
 	try {
 		const jsonPath = join(ctx.pkg?.path || ctx.cwdPath, 'package.json')
-		console.log('jsonPath: ', jsonPath)
 		const text = readFileSync(jsonPath, 'utf-8')
 		const data = JSON.parse(text)
 		data.version = ctx.pkg?.v
