@@ -1,4 +1,4 @@
-import { XiuError } from '../error/package-error'
+import { XiuError } from '../error/xiu-error'
 import { XiuContext, XiuFn } from '../option'
 import { logger } from '../utils'
 
