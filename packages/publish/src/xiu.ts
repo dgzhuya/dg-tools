@@ -24,6 +24,7 @@ class Xiu {
 					isCalled = true
 					await next()
 				})
+				this.#context.runTier++
 				if (!isCalled) await next()
 			})
 		}
@@ -39,6 +40,8 @@ class Xiu {
 export const createXiu = (option: XiuOption = {}) => {
 	return new Xiu({
 		registry: 'https://registry.npmjs.org',
+		runTier: 0,
+		pkgJson: '',
 		cwdPath: cwd(),
 		...option
 	})

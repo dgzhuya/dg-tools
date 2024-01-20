@@ -8,6 +8,7 @@ import { XiuError } from '../error/xiu-error'
 export const pkgInfoHandler = async (ctx: XiuContext) => {
 	if (!ctx.space) {
 		ctx.pkg = findCurrentPackage(ctx.cwdPath)
+		ctx.pkgJson = join(ctx.pkg.path, 'package.json')
 		return
 	}
 
@@ -28,7 +29,7 @@ export const pkgInfoHandler = async (ctx: XiuContext) => {
 		const pkg = pkgs.find(p => p.name === result)
 
 		if (!pkg) throw new XiuError('22000', 'inquirer', result)
-
+		ctx.pkgJson = join(pkg.path, 'package.json')
 		ctx.pkg = pkg
 	} catch (error) {
 		throw new XiuError('21000', 'inquirer')

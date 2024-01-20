@@ -19,6 +19,8 @@ export interface PackageInfo {
 export interface XiuContext extends XiuOption {
 	cwdPath: string
 	registry: string
+	runTier: number
+	pkgJson: string
 	pkg?: PackageInfo
 }
 

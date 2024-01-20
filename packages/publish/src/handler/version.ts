@@ -1,7 +1,6 @@
 import { select } from '@inquirer/prompts'
 import { XiuContext } from '../option'
 import { readFileSync } from 'fs'
-import { join } from 'path'
 import { formatPkg } from '../utils'
 import { XiuError } from '../error/xiu-error'
 
@@ -22,16 +21,16 @@ export const versionHandler = async (ctx: XiuContext) => {
 			}))
 		})
 		if (ctx.pkg) ctx.pkg.v = updateVersion(tierVersion, result)
+		console.log('ctx.pkg: ', ctx.pkg)
 	} catch (error) {
 		throw new XiuError('21003', 'inquirer-select')
 	}
 
 	try {
-		const jsonPath = join(ctx.pkg?.path || ctx.cwdPath, 'package.json')
-		const text = readFileSync(jsonPath, 'utf-8')
+		const text = readFileSync(ctx.pkgJson, 'utf-8')
 		const data = JSON.parse(text)
 		data.version = ctx.pkg?.v
-		await formatPkg(JSON.stringify(data), jsonPath)
+		await formatPkg(JSON.stringify(data), ctx.pkgJson)
 	} catch (error) {
 		throw error
 	}
