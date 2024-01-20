@@ -12,7 +12,7 @@ export const commitHandler = async (ctx: XiuContext) => {
 				message: '请输入提交信息: ',
 				default: `🔧 build: 发布版本${ctx.pkg?.v}`
 			})
-			await gitCommit(commitInfo, [ctx.pkg?.path || ''])
+			await gitCommit(commitInfo, ...ctx.pkgJson)
 		} catch (error) {
 			if (error instanceof XiuError) {
 				throw error

@@ -1,13 +1,14 @@
 import { XiuError } from '../error/xiu-error'
 import { XiuContext, XiuFn } from '../option'
-import { logError } from '../utils'
+import { gitCheckoutFile, logError } from '../utils'
 
-export const loggerHandler = async (_: XiuContext, next: XiuFn) => {
+export const loggerHandler = async (ctx: XiuContext, next: XiuFn) => {
 	try {
 		await next()
 	} catch (error) {
 		if (error instanceof XiuError) {
-			logError(error)
+			if (ctx.runTier) gitCheckoutFile(...ctx.pkgJson)
+			if (ctx.runTier > 4) logError(error)
 		}
 	}
 }

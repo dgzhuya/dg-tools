@@ -17,9 +17,17 @@ export const checkProjectGit = async () => {
 	}
 }
 
-export const gitCommit = async (message: string, files: string[]) => {
+export const gitCommit = async (message: string, ...files: string[]) => {
 	try {
 		return await execAsync(`git commit ${files.join(' ')} -m '${message}'`)
+	} catch (error) {
+		throw new XiuError('30003')
+	}
+}
+
+export const gitCheckoutFile = async (...files: string[]) => {
+	try {
+		return await execAsync(`git checkout -- ${files.join(' ')}`)
 	} catch (error) {
 		throw new XiuError('30003')
 	}
