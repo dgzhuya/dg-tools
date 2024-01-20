@@ -1,26 +1,26 @@
+import { XiuError } from '../error/xiu-error'
 import { execAsync } from './shell'
 
 export const checkGit = async () => {
-    try {
-        return await execAsync('git version')
-    } catch (error) {
-        throw new Error('请安装git')
-    }
+	try {
+		return await execAsync('git version')
+	} catch (error) {
+		throw new XiuError('30001')
+	}
 }
 
 export const checkProjectGit = async () => {
-    try {
-        return await execAsync('git status')
-    } catch (error) {
-        throw new Error('项目未使用git')
-    }
+	try {
+		return await execAsync('git status')
+	} catch (error) {
+		throw new XiuError('30002')
+	}
 }
 
 export const gitCommit = async (message: string, files: string[]) => {
-    try {
-        return await execAsync(`git commit ${files.join(' ')} -m '${message}'`)
-    } catch (error) {
-        console.log('error: ', error)
-        throw new Error('提交失败')
-    }
+	try {
+		return await execAsync(`git commit ${files.join(' ')} -m '${message}'`)
+	} catch (error) {
+		throw new XiuError('30003')
+	}
 }
