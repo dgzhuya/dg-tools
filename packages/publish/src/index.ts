@@ -8,6 +8,7 @@ import { hookHandler } from './handler/hook'
 import { uploadHandler } from './handler/upload'
 import { commitHandler } from './handler/commit'
 import { loggerHandler } from './handler/logger'
+import { networkCheck } from './handler/network'
 
 const program = new Command()
 
@@ -19,10 +20,13 @@ program
 	.option('-s, --space <dir>', 'use workspeace')
 	.option('-c, --commit', 'git commit this time publish')
 	.option('-b, --build', 'run build command before publish')
+	.option('-r, --registry <url>', 'choose your npm registry')
+	.option('-n, --network', 'check current registry url')
 	.option('-h, --hook <command>', 'run your command before publish')
 	.action((option: XiuOption) => {
 		const app = createXiu(option)
 		app.use(loggerHandler)
+			.use(networkCheck)
 			.use(pkgInfoHandler)
 			.use(versionHandler)
 			.use(hookHandler)

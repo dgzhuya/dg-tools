@@ -4,6 +4,8 @@ export interface XiuOption {
 	space?: string
 	build?: boolean
 	hook?: string
+	registry?: string
+	network?: boolean
 }
 
 export interface PackageInfo {
@@ -16,6 +18,7 @@ export interface PackageInfo {
 
 export interface XiuContext extends XiuOption {
 	cwdPath: string
+	registry: string
 	pkg?: PackageInfo
 }
 
