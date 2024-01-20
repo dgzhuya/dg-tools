@@ -1,5 +1,5 @@
 import { input } from '@inquirer/prompts'
-import { execAsync, printLoading } from '../utils'
+import { execAsync, logger, printLoading } from '../utils'
 import { XiuContext } from '../option'
 import { XiuError } from '../error/xiu-error'
 
@@ -20,7 +20,8 @@ export const uploadHandler = async (ctx: XiuContext) => {
 	try {
 		close = printLoading('上传中')
 		timer = setTimeout(() => {
-			throw new XiuError('40000')
+			logger('发布超时,请检查网络设置', 'fail')
+			process.exit(1)
 		}, 20000)
 		await execAsync(command, ctx.pkg?.path)
 		close()
