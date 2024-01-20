@@ -1,7 +1,7 @@
 import CodeMsg from './code-msg.json'
 import { Template, formatErrorMsg } from './fomart-msg'
 
-type MessageKey = keyof typeof CodeMsg
+export type MessageKey = keyof typeof CodeMsg
 
 type ErrorType = 1 | 2 | 3 | 4 | 5
 type Params = '0' | '1' | '2' | '3'
@@ -18,7 +18,7 @@ type BuildMsg<T extends string> = T extends `${ErrorType}${infer Num}${string}`
 		: never
 	: never
 
-export class XiuError<T extends MessageKey> extends Error {
+export class XiuError<T extends MessageKey = MessageKey> extends Error {
 	#code: T
 
 	constructor(code: T, ...msgs: BuildMsg<T>) {
