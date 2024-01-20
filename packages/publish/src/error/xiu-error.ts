@@ -33,6 +33,6 @@ export class XiuError<T extends MessageKey> extends Error {
 	}
 
 	toString() {
-		return `Caught a error code: ${this.#code},message=${this.message}`
+		return `Caught a error code: ${this.#code},${this.message}`
 	}
 }
