@@ -8,6 +8,6 @@
 	"arrowParens": "avoid",
 	"bracketSpacing": true,
 	"endOfLine": "crlf",
-	"vueIndentScriptAndStyle": true
+	"vueIndentScriptAndStyle": true,
+	"useEditorConfig": true
 }
-
