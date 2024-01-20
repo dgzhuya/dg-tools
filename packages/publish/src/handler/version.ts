@@ -21,8 +21,7 @@ export const versionHandler = async (ctx: XiuContext) => {
 				description: `版本号更新为: ${tierVersion.join('.')}->${updateVersion(tierVersion, index)}`
 			}))
 		})
-		tierVersion[result] += 1
-		if (ctx.pkg) ctx.pkg.v = tierVersion.join('.')
+		if (ctx.pkg) ctx.pkg.v = updateVersion(tierVersion, result)
 	} catch (error) {
 		throw new XiuError('21003', 'inquirer-select')
 	}
