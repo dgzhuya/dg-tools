@@ -6,7 +6,6 @@
 		"xiu": "dist/index.js"
 	},
 	"scripts": {
-		"dev": "tsx src/index.ts -o -c -s 1111",
 		"build": "tsx script/build.ts"
 	},
 	"keywords": [
