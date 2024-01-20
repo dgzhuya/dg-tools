@@ -6,9 +6,11 @@ export const loggerHandler = async (ctx: XiuContext, next: XiuFn) => {
 	try {
 		await next()
 	} catch (error) {
+		if (ctx.runTier >= 5) {
+			gitCheckoutFile(ctx.pkgJson).catch(err => logError(err))
+		}
 		if (error instanceof XiuError) {
-			if (ctx.runTier) gitCheckoutFile(...ctx.pkgJson)
-			if (ctx.runTier > 4) logError(error)
+			logError(error)
 		}
 	}
 }

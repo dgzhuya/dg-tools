@@ -21,7 +21,6 @@ export const versionHandler = async (ctx: XiuContext) => {
 			}))
 		})
 		if (ctx.pkg) ctx.pkg.v = updateVersion(tierVersion, result)
-		console.log('ctx.pkg: ', ctx.pkg)
 	} catch (error) {
 		throw new XiuError('21003', 'inquirer-select')
 	}
