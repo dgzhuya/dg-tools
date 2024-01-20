@@ -8,7 +8,7 @@ export const formatErrorMsg = (template: Template<'%s'>, msgs: string[]) => {
 	while (i < template.length) {
 		const char = template[i]
 		if (char === '%' && template[i + 1] === 's') {
-			if (msgs.length === 0) throw new XiuError('90000')
+			if (msgs.length === 0) throw new XiuError('51000', '1')
 			result += msgs.shift()
 			i++
 		} else {
