@@ -22,9 +22,9 @@ class Xiu {
 				let isCalled = false
 				await this.#handlers[i](this.#context, async () => {
 					isCalled = true
-					next()
+					await next()
 				})
-				if (!isCalled) next()
+				if (!isCalled) await next()
 			})
 		}
 		return stack.pop()
