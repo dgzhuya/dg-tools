@@ -1,8 +1,9 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { PackageInfo } from '../option'
+import { XiuError } from '../error/xiu-error'
 
-export const findCurrentPackage = async (path: string) => {
+export const findCurrentPackage = (path: string) => {
 	const jsonPath = join(path, 'package.json')
 	if (existsSync(jsonPath)) {
 		const data = readFileSync(jsonPath, 'utf-8')
@@ -19,10 +20,10 @@ export const findCurrentPackage = async (path: string) => {
 			}
 			return result
 		} catch (error) {
-			return Promise.reject(`解析${jsonPath}失败`)
+			throw new XiuError('11001', jsonPath)
 		}
 	}
-	return Promise.reject(`${path}不存在package.json`)
+	throw new XiuError('11002', path)
 }
 
 export const findPackages = (path: string) => {
@@ -47,12 +48,12 @@ export const findPackages = (path: string) => {
 				}
 				entrys.push(result)
 			} catch (error) {
-				throw new Error(`解析${jsonPath}失败`)
+				throw new XiuError('11001', jsonPath)
 			}
 		}
 	}
 	if (entrys.length === 0) {
-		throw new Error('工作目录下没有包')
+		throw new XiuError('11003', path)
 	}
 	return entrys
 }
