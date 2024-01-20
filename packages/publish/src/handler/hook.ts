@@ -1,11 +1,16 @@
+import { XiuError } from '../error/xiu-error'
 import { XiuContext } from '../option'
 import { execAsync } from '../utils'
 
 export const hookHandler = async (ctx: XiuContext) => {
-	if (ctx.build) {
-		await execAsync('npm run build', ctx.cwdPath)
+	try {
+		if (ctx.build) await execAsync('npm run build', ctx.cwdPath)
+	} catch (error) {
+		throw new XiuError('30004')
 	}
-	if (ctx.hook) {
-		await execAsync(ctx.hook, ctx.cwdPath)
+	try {
+		if (ctx.hook) await execAsync(ctx.hook, ctx.cwdPath)
+	} catch (error) {
+		throw new XiuError('30005')
 	}
 }
