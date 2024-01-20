@@ -20,11 +20,11 @@ class Xiu {
 			stack.push(async () => {
 				const next = stack.pop() || (async () => {})
 				let isCalled = false
+				this.#context.runTier++
 				await this.#handlers[i](this.#context, async () => {
 					isCalled = true
 					await next()
 				})
-				this.#context.runTier++
 				if (!isCalled) await next()
 			})
 		}
