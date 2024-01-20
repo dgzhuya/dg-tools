@@ -16,7 +16,7 @@ export const uploadHandler = async (ctx: XiuContext) => {
 
 	let close: Function | undefined
 	try {
-		close = loading('上传中', 20, '40001')
+		close = loading('上传中', 20, '40001', ctx)
 		await execAsync(command, ctx.pkg?.path)
 		close()
 	} catch (error) {
