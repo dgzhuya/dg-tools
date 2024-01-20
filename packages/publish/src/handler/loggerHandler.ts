@@ -5,6 +5,7 @@ export const loggerHandler = async (_: XiuContext, next: XiuFn) => {
 	try {
 		await next()
 	} catch (error) {
+		logger('error')
 		logger(error, 'fail')
 	}
 }

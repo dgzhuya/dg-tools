@@ -7,7 +7,7 @@ import { findCurrentPackage, findPackages } from '../utils'
 export const pkgInfoHandler = async (ctx: XiuContext) => {
 	if (!ctx.space) {
 		try {
-			ctx.pkg = findCurrentPackage(ctx.cwdPath)
+			ctx.pkg = await findCurrentPackage(ctx.cwdPath)
 		} catch (error) {
 			throw error
 		}

@@ -2,7 +2,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { PackageInfo } from '../option'
 
-export const findCurrentPackage = (path: string) => {
+export const findCurrentPackage = async (path: string) => {
 	const jsonPath = join(path, 'package.json')
 	if (existsSync(jsonPath)) {
 		const data = readFileSync(jsonPath, 'utf-8')
@@ -19,10 +19,10 @@ export const findCurrentPackage = (path: string) => {
 			}
 			return result
 		} catch (error) {
-			throw new Error(`解析${jsonPath}失败`)
+			return Promise.reject(`解析${jsonPath}失败`)
 		}
 	}
-	throw new Error(`${path}不存在package.json`)
+	return Promise.reject(`${path}不存在package.json`)
 }
 
 export const findPackages = (path: string) => {

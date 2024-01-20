@@ -6,10 +6,17 @@
 		"xiu": "dist/index.js"
 	},
 	"scripts": {
-		"dev": "tsx src/index.ts -o -c",
+		"dev": "tsx src/index.ts -o -c -s 1111",
 		"build": "tsx script/build.ts"
 	},
-	"keywords": ["publish", "commit", "workspace", "tools", "facility", "cli"],
+	"keywords": [
+		"publish",
+		"commit",
+		"workspace",
+		"tools",
+		"facility",
+		"cli"
+	],
 	"author": "dgzhuya",
 	"license": "ISC",
 	"devDependencies": {
