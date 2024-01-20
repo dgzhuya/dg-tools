@@ -3,6 +3,7 @@ import { XiuContext } from '../option'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { formatPkg } from '../utils'
+import { XiuError } from '../error/xiu-error'
 
 const luoName = ['特大', '大', '中']
 
@@ -20,13 +21,17 @@ export const versionHandler = async (ctx: XiuContext) => {
 				}))
 			})
 			tierVersion[result] += 1
+			if (ctx.pkg) ctx.pkg.v = tierVersion.join('.')
+		} catch (error) {
+			throw new XiuError('21003', 'inquirer-select')
+		}
+
+		try {
 			const jsonPath = join(ctx.pkg?.path || ctx.cwdPath, 'package.json')
-			const newVersion = tierVersion.join('.')
 			const text = readFileSync(jsonPath, 'utf-8')
 			const data = JSON.parse(text)
-			data.version = newVersion
+			data.version = ctx.pkg?.v
 			await formatPkg(JSON.stringify(data), jsonPath)
-			if (ctx.pkg) ctx.pkg.v = newVersion
 		} catch (error) {
 			throw error
 		}
