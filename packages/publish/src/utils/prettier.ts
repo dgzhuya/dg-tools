@@ -12,7 +12,7 @@ export const formatPkg = async (
 	const formatted = await format(text, {
 		...config,
 		...options,
-		parser: 'json'
+		parser: 'json-stringify'
 	})
 	writeFileSync(path, formatted)
 }

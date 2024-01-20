@@ -25,7 +25,7 @@ export const versionHandler = async (ctx: XiuContext) => {
 			const text = readFileSync(jsonPath, 'utf-8')
 			const data = JSON.parse(text)
 			data.version = newVersion
-			await formatPkg(JSON.stringify(data, null, 2), jsonPath)
+			await formatPkg(JSON.stringify(data), jsonPath)
 			if (ctx.pkg) ctx.pkg.v = newVersion
 		} catch (error) {
 			throw error
