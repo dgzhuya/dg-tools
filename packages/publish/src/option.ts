@@ -22,6 +22,7 @@ export interface XiuContext extends CmdOptions {
 	cwdPath: string
 	registry: string
 	updatedVersion: boolean
+	networkSuccess: boolean
 	pkgJson: string
 	pkg?: PackageInfo
 	printError: (error: XiuError) => void

@@ -42,6 +42,7 @@ export const createXiu = (options?: CmdOptions) => {
 	return new Xiu({
 		registry: 'https://registry.npmjs.org',
 		updatedVersion: false,
+		networkSuccess: false,
 		pkgJson: '',
 		printError(error) {
 			if (this.updatedVersion) {

@@ -21,6 +21,10 @@ export const uploadHandler = async (ctx: XiuContext) => {
 		close()
 	} catch (error) {
 		if (close) close()
-		throw new XiuError('41000', `${ctx.pkg?.name}@${ctx.pkg?.v}`)
+		if (ctx.networkSuccess) {
+			throw new XiuError('40002')
+		} else {
+			throw new XiuError('41000', `${ctx.pkg?.name}@${ctx.pkg?.v}`)
+		}
 	}
 }

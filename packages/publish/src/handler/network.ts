@@ -12,6 +12,7 @@ export const networkCheck = async (ctx: XiuContext) => {
 			})
 			close()
 			logger('网络正常,ok')
+			ctx.networkSuccess = true
 		} catch (error) {
 			if (close) close()
 			throw new XiuError('40000')
