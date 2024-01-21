@@ -1,7 +1,7 @@
 {
 	"name": "dg-tools",
 	"scripts": {
-		"publish": "xiu -o -w packages -c",
+		"publish": "xiu -o -s packages -c -b -n",
 		"docs:dev": "vuepress dev docs",
 		"docs:build": "vuepress build docs"
 	},
@@ -16,4 +16,3 @@
 		"vuepress": "2.0.0-rc.0"
 	}
 }
-
