@@ -8,7 +8,7 @@ export const uploadHandler = async (ctx: XiuContext) => {
 	try {
 		if (ctx.otp) {
 			const otpCode = await input({ message: '请输入单次验证码: ' })
-			command += `--otp=${otpCode}`
+			command += ` --otp=${otpCode}`
 		}
 	} catch (error) {
 		throw new XiuError('21000', 'inquirer-input')
