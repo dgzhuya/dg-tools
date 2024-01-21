@@ -1,5 +1,3 @@
-import { XiuError } from '../error/xiu-error'
-
 export const logger = (
 	msg: string | unknown,
 	status: 'success' | 'fail' = 'success'
@@ -10,5 +8,3 @@ export const logger = (
 		console.log('\x1b[31m', msg)
 	}
 }
-
-export const logError = (error: XiuError) => logger(error.toString(), 'fail')

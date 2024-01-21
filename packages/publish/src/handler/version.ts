@@ -30,6 +30,7 @@ export const versionHandler = async (ctx: XiuContext) => {
 		const data = JSON.parse(text)
 		data.version = ctx.pkg?.v
 		await formatPkg(JSON.stringify(data), ctx.pkgJson)
+		ctx.updatedVersion = true
 	} catch (error) {
 		throw error
 	}

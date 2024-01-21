@@ -1,5 +1,7 @@
-import { XiuOption, XiuContext, XiuHandler, XiuFn } from './option'
 import { cwd } from 'process'
+import { XiuError } from './error/xiu-error'
+import { gitCheckoutFile, logger } from './utils'
+import { CmdOptions, XiuContext, XiuHandler, XiuFn } from './option'
 
 class Xiu {
 	#context: XiuContext
@@ -20,7 +22,6 @@ class Xiu {
 			stack.push(async () => {
 				const next = stack.pop() || (async () => {})
 				let isCalled = false
-				this.#context.runTier++
 				await this.#handlers[i](this.#context, async () => {
 					isCalled = true
 					await next()
@@ -37,12 +38,40 @@ class Xiu {
 	}
 }
 
-export const createXiu = (option: XiuOption = {}) => {
+export const createXiu = (options?: CmdOptions) => {
 	return new Xiu({
 		registry: 'https://registry.npmjs.org',
-		runTier: 0,
+		updatedVersion: false,
 		pkgJson: '',
+		printError(error) {
+			if (this.updatedVersion) {
+				gitCheckoutFile(this.pkgJson).catch(err => {
+					this.updatedVersion = false
+					this.printError(err)
+				})
+			}
+			logger(error.toString(), 'fail')
+		},
+		loading(msg, time, code) {
+			let status: 1 | 2 | 3 | 4 = 1
+			let curIndex = 1
+			const realTimes = time * 2
+			const id = setInterval(() => {
+				console.clear()
+				if (realTimes <= curIndex) {
+					this.printError(new XiuError(code))
+					clearInterval(id)
+					process.exit(1)
+				}
+				curIndex++
+				logger(
+					`当前耗时: ${(curIndex / 2) | 0}s,${msg}${'.'.repeat(status)}`
+				)
+				status = (status % 5) + 1
+			}, 500)
+			return () => clearInterval(id)
+		},
 		cwdPath: cwd(),
-		...option
+		...options
 	})
 }

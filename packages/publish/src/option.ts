@@ -1,4 +1,6 @@
-export interface XiuOption {
+import { MessageKey, XiuError } from './error/xiu-error'
+
+export interface CmdOptions {
 	otp?: boolean
 	commit?: boolean
 	space?: string
@@ -16,12 +18,14 @@ export interface PackageInfo {
 	luo?: boolean
 }
 
-export interface XiuContext extends XiuOption {
+export interface XiuContext extends CmdOptions {
 	cwdPath: string
 	registry: string
-	runTier: number
+	updatedVersion: boolean
 	pkgJson: string
 	pkg?: PackageInfo
+	printError: (error: XiuError) => void
+	loading: (msg: string, time: number, errorCode: MessageKey) => () => void
 }
 
 export type XiuFn = () => Promise<void>

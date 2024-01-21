@@ -1,6 +1,6 @@
 import { Command } from 'commander'
 import pkg from '../package.json'
-import { XiuOption } from './option'
+import { CmdOptions } from './option'
 import { createXiu } from './xiu'
 import { pkgInfoHandler } from './handler/pkg'
 import { versionHandler } from './handler/version'
@@ -23,7 +23,7 @@ program
 	.option('-r, --registry <url>', 'choose your npm registry')
 	.option('-n, --network', 'check current registry url')
 	.option('-h, --hook <command>', 'run your command before publish')
-	.action((option: XiuOption) => {
+	.action((option: CmdOptions) => {
 		const app = createXiu(option)
 		app.use(loggerHandler)
 			.use(networkCheck)

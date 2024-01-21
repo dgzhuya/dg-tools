@@ -1,5 +1,5 @@
 import { input } from '@inquirer/prompts'
-import { execAsync, loading } from '../utils'
+import { execAsync } from '../utils'
 import { XiuContext } from '../option'
 import { XiuError } from '../error/xiu-error'
 
@@ -16,7 +16,7 @@ export const uploadHandler = async (ctx: XiuContext) => {
 
 	let close: Function | undefined
 	try {
-		close = loading('上传中', 20, '40001', ctx)
+		close = ctx.loading('上传中', 20, '40001')
 		await execAsync(command, ctx.pkg?.path)
 		close()
 	} catch (error) {
