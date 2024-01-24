@@ -3,6 +3,7 @@ import { cwd } from 'process'
 import { build } from 'esbuild'
 import { dtsPlugin } from 'esbuild-plugin-d.ts'
 import { readdirSync, statSync } from 'node:fs'
+import { dependencies } from '../package.json'
 
 const rootPath = cwd()
 
@@ -42,5 +43,6 @@ build({
 	entryPoints: [join(rootPath, 'src/bin/index.ts')],
 	tsconfig: join(rootPath, 'tsconfig.json'),
 	outfile: join(rootPath, 'dist/bin/index.js'),
-	platform: 'node'
+	platform: 'node',
+	external: Object.keys(dependencies)
 })
