@@ -1,0 +1,9 @@
+.github/
+src/
+tests/
+script/
+.nvmrc
+MIGRATION.md
+tsconfig.json
+.editorconfig
+.prettierrc

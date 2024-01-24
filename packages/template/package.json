@@ -2,12 +2,19 @@
 	"name": "@biuxiu/template",
 	"version": "1.0.0",
 	"description": "",
-	"main": "index.js",
+	"main": "dist/index.js",
+	"bin": {
+		"template-init": "dist/bin/index.js"
+	},
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"dev": "tsx src/index.ts",
+		"build": "tsx script/build.ts"
 	},
 	"keywords": [],
 	"author": "dgzhuya",
-	"license": "ISC"
+	"license": "ISC",
+	"devDependencies": {
+		"esbuild": "^0.19.11",
+		"esbuild-plugin-d.ts": "^1.2.3"
+	}
 }
-
