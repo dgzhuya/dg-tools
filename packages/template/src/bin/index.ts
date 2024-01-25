@@ -22,9 +22,7 @@ const initProject = async () => {
 	try {
 		const path = cwd()
 		const modules = await findBtpl(path)
-		if (modules.length === 0) {
-			return
-		}
+
 		const tsFile = join(path, 'btpl-env.d.ts')
 
 		const btpl = new BtplEnv(tsFile)
