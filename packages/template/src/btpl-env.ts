@@ -146,16 +146,17 @@ export class BtplEnv {
 
 	#updateInterfaceProp(source: string, node: InterfaceDeclaration) {
 		const keys = new Template(source).findKeys().map(this.#formatKey)
-		const props = node.getProperties()
-		props.forEach(k => {
-			if (!keys.includes(this.#getPropKeyText(k))) {
-				k.remove()
+		const props = node
+			.getProperties()
+			.map(p => p.getChildAtIndex(0).getText())
+		keys.forEach(k => {
+			if (!props.includes(k)) {
+				node.addProperty({ name: k, type: 'string' })
 			}
 		})
-		const propKeys = props.map(p => p.getChildAtIndex(0).getText())
-		keys.forEach(k => {
-			if (!propKeys.includes(k)) {
-				node.addProperty({ name: k, type: 'string' })
+		node.getProperties().forEach(k => {
+			if (!keys.includes(this.#getPropKeyText(k))) {
+				k.remove()
 			}
 		})
 	}
