@@ -54,6 +54,21 @@ export class BtplEnv {
 		})
 	}
 
+	rename(oldName: string, newName: string) {
+		const oldKeyName = this.#formatKey(oldName)
+		const oldInterfaceName = this.#formatName(oldName)
+
+		const newKeyName = this.#formatKey(newName)
+		const newInterfaceName = this.#formatName(newName)
+
+		const property = this.#template.getProperty(oldKeyName)
+		if (property) property.remove()
+		this.#template.addProperty({ name: newKeyName, type: newInterfaceName })
+
+		const node = this.#module.getInterfaceOrThrow(oldInterfaceName)
+		node.rename(newInterfaceName)
+	}
+
 	remove(name: string) {
 		try {
 			const keyName = this.#formatKey(name)
