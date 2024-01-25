@@ -7,7 +7,6 @@
 		"template-init": "dist/bin/index.js"
 	},
 	"scripts": {
-		"dev": "tsx src/index.ts",
 		"build": "tsx script/build.ts"
 	},
 	"keywords": [],
