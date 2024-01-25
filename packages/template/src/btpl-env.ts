@@ -55,32 +55,26 @@ export class BtplEnv {
 	}
 
 	rename(oldName: string, newName: string) {
-		const oldKeyName = this.#formatKey(oldName)
-		const oldInterfaceName = this.#formatName(oldName)
-
 		const newKeyName = this.#formatKey(newName)
 		const newInterfaceName = this.#formatName(newName)
 
-		const property = this.#template.getProperty(oldKeyName)
+		const property = this.#template.getProperty(this.#formatKey(oldName))
 		if (property) property.remove()
 		this.#template.addProperty({ name: newKeyName, type: newInterfaceName })
 
-		const node = this.#module.getInterfaceOrThrow(oldInterfaceName)
+		const node = this.#module.getInterfaceOrThrow(this.#formatName(oldName))
 		node.rename(newInterfaceName)
 	}
 
 	remove(name: string) {
 		try {
 			const keyName = this.#formatKey(name)
-			const interfaceName = this.#formatName(name)
-			const prop = this.#template.getProperty(keyName)
-			if (prop) {
-				prop.remove()
-			}
-			const node = this.#module.getInterface(interfaceName)
-			if (node) {
-				node.remove()
-			}
+			const prop = this.#template.getPropertyOrThrow(keyName)
+			prop.remove()
+			const node = this.#module.getInterfaceOrThrow(
+				this.#formatName(name)
+			)
+			node.remove()
 		} catch (error) {
 			throw error
 		}
@@ -148,7 +142,7 @@ export class BtplEnv {
 	}
 
 	#formatKey(name: string) {
-		return `\'${name}\'`
+		return name.includes('-') ? `\'${name}\'` : name
 	}
 
 	#getPropKeyText(node: PropertySignature) {
