@@ -1,41 +1,40 @@
-import { existsSync } from 'node:fs'
-import { readdir, writeFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { cwd } from 'node:process'
-import { updateTSFile } from '../tools'
-
-const fileInfo = `import '@biuxiu/template'
-
-declare module '@biuxiu/template' {
-	interface TemplateMap {}
-}
-`
+import { BtplEnv } from '../btpl-env'
 
 const findBtpl = async (path: string) => {
 	const sourcesPath = join(path, 'sources')
 	const files = await readdir(sourcesPath)
-	const result: string[] = []
+	const result: { name: string; source: string }[] = []
 	for (const file of files) {
 		if (/\.btpl$/.test(file)) {
-			result.push(file.split('.')[0])
+			result.push({
+				name: file.split('.')[0],
+				source: await readFile(join(sourcesPath, file), 'utf-8')
+			})
 		}
 	}
 	return result
 }
 
 const initProject = async () => {
-	const path = cwd()
-	const modules = await findBtpl(path)
-	if (modules.length === 0) {
-		return
-	}
-	const tsFile = join(path, 'btpl-env.d.ts')
+	try {
+		const path = cwd()
+		const modules = await findBtpl(path)
+		if (modules.length === 0) {
+			return
+		}
+		const tsFile = join(path, 'btpl-env.d.ts')
 
-	if (!existsSync(tsFile)) {
-		await writeFile(tsFile, fileInfo, 'utf-8')
-	}
-	for (const module of modules) {
-		await updateTSFile(tsFile, module)
+		const btpl = new BtplEnv(tsFile)
+		for (const { name, source } of modules) {
+			await btpl.update(name, source)
+		}
+		btpl.clear(modules.map(m => m.name))
+		await btpl.save()
+	} catch (error) {
+		console.log('\x1b[31m', (error as Error).message)
 	}
 }
 
