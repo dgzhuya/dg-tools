@@ -17,7 +17,7 @@ declare module '@biuxiu/template' {
 }
 `
 
-export class BtplEnv {
+export default class BtplEnv {
 	#path: string
 	#source: SourceFile
 	#module: ModuleDeclaration
