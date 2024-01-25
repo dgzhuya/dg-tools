@@ -1,7 +1,7 @@
-import { readFile, readdir } from 'node:fs/promises'
+import { BtplEnv } from '..'
 import { join } from 'node:path'
 import { cwd } from 'node:process'
-import BtplEnv from '../btpl-env'
+import { readFile, readdir } from 'node:fs/promises'
 
 const findBtpl = async (path: string) => {
 	const sourcesPath = join(path, 'sources')
