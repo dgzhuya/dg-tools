@@ -5,10 +5,10 @@ import { readFile } from 'fs/promises'
 import { Template } from './template'
 import { existsSync } from 'node:fs'
 
-export const renderTemplate = async <T extends Kind>(
+export async function renderTemplate<T extends Kind>(
 	name: T,
 	config: Config<T>
-) => {
+) {
 	const filePath = join(cwd(), 'sources', `${name}.btpl`)
 	if (!existsSync(filePath)) {
 		throw new Error('文件不存在')
