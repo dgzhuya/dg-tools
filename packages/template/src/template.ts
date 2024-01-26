@@ -1,5 +1,6 @@
 import { Config, Kind } from './types'
 
+const charRegx = /[a-zA-Z0-9_-\s]/
 export class Template {
 	#source: string
 	#index: number = 0
@@ -27,9 +28,13 @@ export class Template {
 			const char = this.#next()
 			if (char === '%' && this.#peek() === '}') {
 				this.#next()
-				return key
+				return key.trim()
 			}
-			key += char
+			if (charRegx.test(char)) {
+				key += char
+			} else {
+				throw new Error('key类型错误')
+			}
 		}
 		throw new Error('未匹配到结尾符号')
 	}
