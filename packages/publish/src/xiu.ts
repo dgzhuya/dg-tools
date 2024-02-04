@@ -58,19 +58,21 @@ export const createXiu = (options?: CmdOptions) => {
 			let curIndex = 1
 			const realTimes = time * 2
 			const id = setInterval(() => {
-				console.clear()
+				process.stdout.clearLine(0)
 				if (realTimes <= curIndex) {
 					this.printError(new XiuError(code))
 					clearInterval(id)
 					process.exit(1)
 				}
 				curIndex++
-				logger(
-					`当前耗时: ${(curIndex / 2) | 0}s,${msg}${'.'.repeat(status)}`
+				process.stdout.write(
+					`\x1b[32m当前耗时: ${(curIndex / 2) | 0}s,${msg}${'.'.repeat(status)}\x1b[0m`
 				)
 				status = (status % 5) + 1
 			}, 500)
-			return () => clearInterval(id)
+			return () => {
+				process.stdout.write('\n')
+				clearInterval(id)}
 		},
 		cwdPath: cwd(),
 		...options
