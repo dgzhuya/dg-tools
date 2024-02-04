@@ -1,6 +1,6 @@
 {
 	"name": "@biuxiu/publish",
-	"version": "1.2.9",
+	"version": "1.2.10",
 	"description": "一个帮助用户更方便发布npm包的工具",
 	"bin": {
 		"xiu": "dist/index.js"
