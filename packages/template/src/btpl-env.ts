@@ -26,7 +26,12 @@ export class BtplEnv {
 		this.#path = path
 		this.#initFile(path)
 		this.#source = new Project().addSourceFileAtPath(path)
-		this.#module = this.#source.getModuleOrThrow("'@biuxiu/template'")
+		const res = this.#source.getModule("'@biuxiu/template'")
+		if (res) {
+			this.#module = res
+		} else {
+			this.#module = this.#source.getModuleOrThrow('"@biuxiu/template"')
+		}
 		this.#template = this.#module.getInterfaceOrThrow('TemplateMap')
 	}
 
