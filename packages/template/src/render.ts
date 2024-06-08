@@ -18,10 +18,7 @@ export async function renderTemplate<T extends Kind>(
 	return new Template(templateStr).render(config)
 }
 
-export async function renderTemplateSync<T extends Kind>(
-	name: T,
-	config: Config<T>
-) {
+export function renderTemplateSync<T extends Kind>(name: T, config: Config<T>) {
 	const filePath = join(cwd(), 'sources', `${name}.btpl`)
 	if (!existsSync(filePath)) {
 		throw new Error('文件不存在')
