@@ -6,11 +6,19 @@ import { Template } from './template'
 import { existsSync } from 'node:fs'
 import { readFileSync } from 'fs'
 
+const RenderConfig = {
+	path: cwd()
+}
+
+export function setBasePath(path: string) {
+	RenderConfig.path = path
+}
+
 export async function renderTemplate<T extends Kind>(
 	name: T,
 	config: Config<T>
 ) {
-	const filePath = join(cwd(), 'sources', `${name}.btpl`)
+	const filePath = join(RenderConfig.path, 'sources', `${name}.btpl`)
 	if (!existsSync(filePath)) {
 		throw new Error('文件不存在')
 	}
@@ -19,7 +27,7 @@ export async function renderTemplate<T extends Kind>(
 }
 
 export function renderTemplateSync<T extends Kind>(name: T, config: Config<T>) {
-	const filePath = join(cwd(), 'sources', `${name}.btpl`)
+	const filePath = join(RenderConfig.path, 'sources', `${name}.btpl`)
 	if (!existsSync(filePath)) {
 		throw new Error('文件不存在')
 	}
