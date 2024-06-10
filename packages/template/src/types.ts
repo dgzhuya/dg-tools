@@ -1,9 +1,7 @@
 type TemplateKey = keyof TemplateMap
-export type Kind = TemplateKey extends never ? unknown : TemplateKey
+export type Kind = TemplateKey extends never ? any : TemplateKey
 export type Config<T extends Kind> = T extends TemplateKey
 	? TemplateMap[T]
-	: unknown
+	: any
 
-export interface TemplateMap {
-	111: string
-}
+export interface TemplateMap {}
