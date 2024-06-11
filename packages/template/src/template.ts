@@ -65,7 +65,7 @@ export class Template {
 			if (char === '{' && this.#peek() === '%') {
 				this.#next()
 				const val = config[this.#getKey()]
-				if (!val) {
+				if (typeof val !== 'string') {
 					throw new Error('传入配置信息错误')
 				}
 				result += val
