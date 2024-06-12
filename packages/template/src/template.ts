@@ -86,10 +86,6 @@ export class Template {
 		let result = ''
 		while (this.#hasNext()) {
 			const char = this.#next()
-
-			if (char === '%') {
-				console.log(this.#peek())
-			}
 			if (char === '{' && this.#peek() === '%') {
 				this.#next()
 				const [key, fnKey] = this.#getKeyAndFn()
