@@ -5,3 +5,12 @@ export type Config<T extends Kind> = T extends TemplateKey
 	: any
 
 export interface TemplateMap {}
+
+export type RenderFn = {
+	(val: string): string
+}
+
+export type RenderPlugin = {
+	name: string
+	fn: RenderFn
+}
