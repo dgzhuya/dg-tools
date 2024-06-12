@@ -90,13 +90,12 @@ export class BtplEnv {
 			const keyName = this.#formatKey(name)
 			const interfaceName = this.#formatName(name)
 			const property = this.#template.getProperty(keyName)
-			if (property) {
-				property.remove()
+			if (!property) {
+				this.#template.addProperty({
+					name: keyName,
+					type: interfaceName
+				})
 			}
-			this.#template.addProperty({
-				name: keyName,
-				type: interfaceName
-			})
 			let node = this.#module.getInterface(interfaceName)
 			if (!node) {
 				node = this.#module.addInterface({ name: interfaceName })
