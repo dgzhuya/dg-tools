@@ -79,7 +79,7 @@ export class Template {
 				}
 			}
 		}
-		return keys
+		return keys.filter(k => !!k)
 	}
 
 	render(config: Config<Kind>, plugins: Record<string, RenderFn>) {
