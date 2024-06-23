@@ -74,12 +74,12 @@ export class Template {
 			if (char === '{' && this.#peek() === '%') {
 				this.#next()
 				const key = this.#getKey()
-				if (!keys.includes(key)) {
+				if (key.length > 0 && !keys.includes(key)) {
 					keys.push(key)
 				}
 			}
 		}
-		return keys.filter(k => !!k)
+		return keys
 	}
 
 	render(config: Config<Kind>, plugins: Record<string, RenderFn>) {
