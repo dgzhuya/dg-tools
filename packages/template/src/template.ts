@@ -66,16 +66,18 @@ export class Template {
 	}
 
 	checkError() {
-		const blockStack: { key: string; pos: number }[] = []
+		const blockStack: { msg: string; start: number; end: number }[] = []
 		while (this.#hasNext()) {
 			const char = this.#next()
 			if (char === '{' && this.#peek() === '%') {
 				this.#next()
+				const start = this.#index
 				const [_, fnKey] = this.#getKeyAndFn()
+				const end = this.#index - 2
 				if (fnKey === 'if') {
-					blockStack.push({ key: 'if', pos: this.#index })
+					blockStack.push({ msg: 'if语句缺少end', start, end })
 				} else if (fnKey === 'for') {
-					blockStack.push({ key: 'for', pos: this.#index })
+					blockStack.push({ msg: 'for语句缺少end', start, end })
 				} else if (fnKey === 'end') {
 					blockStack.pop()
 				}

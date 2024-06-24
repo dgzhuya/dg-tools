@@ -5,8 +5,4 @@ export class XiuError extends Error {
 		super()
 		this.message = msg
 	}
-
-	show() {
-		this.message
-	}
 }
