@@ -23,27 +23,6 @@ export class Template {
 		return this.#peek() !== undefined
 	}
 
-	#getKey() {
-		let key = ''
-		while (this.#hasNext()) {
-			const char = this.#next()
-			if (char === '%' && this.#peek() === '}') {
-				this.#next()
-				return key.trim()
-			}
-			if (char === '@') {
-				key = ''
-				continue
-			}
-			if (charRegx.test(char)) {
-				key += char
-				continue
-			}
-			throw new Error('key类型错误')
-		}
-		throw new Error('未匹配到结尾符号')
-	}
-
 	#getKeyAndFn() {
 		let key = ''
 		let fnKey = ''
@@ -68,18 +47,40 @@ export class Template {
 	}
 
 	findKeys() {
-		let keys: string[] = []
+		let keys: Record<string, 'string' | 'boolean'> = {}
 		while (this.#hasNext()) {
 			const char = this.#next()
 			if (char === '{' && this.#peek() === '%') {
 				this.#next()
-				const key = this.#getKey()
-				if (key.length > 0 && !keys.includes(key)) {
-					keys.push(key)
+				const [key, fnKey] = this.#getKeyAndFn()
+				if (key.length > 0 && !keys[key]) {
+					keys[key] = fnKey === 'if' ? 'boolean' : 'string'
 				}
 			}
 		}
 		return keys
+	}
+
+	#parseIfStat(config: Config<Kind>, plugins: Record<string, RenderFn>) {
+		let result = ''
+		while (this.#hasNext()) {
+			const char = this.#next()
+			if (char === '{' && this.#peek() === '%') {
+				this.#next()
+				const [key, fnKey] = this.#getKeyAndFn()
+				if (fnKey === 'end') {
+					return result
+				}
+				const val = config[key]
+				if (typeof val !== 'string') {
+					throw new Error('传入配置信息错误')
+				}
+
+				const fn = plugins[fnKey]
+				result += fn ? fn(val) : val
+			}
+		}
+		throw Error('缺少end@')
 	}
 
 	render(config: Config<Kind>, plugins: Record<string, RenderFn>) {
@@ -90,11 +91,15 @@ export class Template {
 				this.#next()
 				const [key, fnKey] = this.#getKeyAndFn()
 				const val = config[key]
-				if (typeof val !== 'string') {
-					throw new Error('传入配置信息错误')
+				if (fnKey === 'if') {
+					if (val) result += this.#parseIfStat(config, plugins)
+				} else {
+					if (typeof val !== 'string') {
+						throw new Error('传入配置信息错误')
+					}
+					const fn = plugins[fnKey]
+					result += fn ? fn(val) : val
 				}
-				const fn = plugins[fnKey]
-				result += fn ? fn(val) : val
 			} else {
 				result += char
 			}
