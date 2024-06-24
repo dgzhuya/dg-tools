@@ -158,9 +158,11 @@ export class BtplEnv {
 
 	#updateInterfaceProp(source: string, node: InterfaceDeclaration) {
 		try {
-			const fields = Object.entries(new Template(source).findKeys()).map(
-				([key, v]) => ({ key: this.#formatKey(key), type: v })
-			)
+			const filedTypeMap = new Template(source).findKeys()
+			const fields = Object.entries(filedTypeMap).map(([key, v]) => ({
+				key: this.#formatKey(key),
+				type: v
+			}))
 			const keys = fields.map(k => k.key)
 			const props = node
 				.getProperties()
@@ -171,8 +173,14 @@ export class BtplEnv {
 				}
 			})
 			node.getProperties().forEach(k => {
-				if (!keys.includes(this.#getPropKeyText(k))) {
+				const nodeKey = this.#getPropKeyText(k)
+				if (!keys.includes(nodeKey)) {
 					k.remove()
+				} else {
+					const type = k.getChildAtIndex(2).getText()
+					if (filedTypeMap[nodeKey] !== type) {
+						k.setType(filedTypeMap[nodeKey])
+					}
 				}
 			})
 		} catch (error) {
