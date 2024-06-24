@@ -66,20 +66,16 @@ export class Template {
 	}
 
 	checkError() {
-		let line = 0
-		const blockStack: { key: string; line: number }[] = []
+		const blockStack: { key: string; pos: number }[] = []
 		while (this.#hasNext()) {
 			const char = this.#next()
-			if (char === '\n') {
-				line++
-			}
 			if (char === '{' && this.#peek() === '%') {
 				this.#next()
 				const [_, fnKey] = this.#getKeyAndFn()
 				if (fnKey === 'if') {
-					blockStack.push({ key: 'if', line })
+					blockStack.push({ key: 'if', pos: this.#index })
 				} else if (fnKey === 'for') {
-					blockStack.push({ key: 'for', line })
+					blockStack.push({ key: 'for', pos: this.#index })
 				} else if (fnKey === 'end') {
 					blockStack.pop()
 				}
