@@ -72,8 +72,11 @@ export class Template {
 			if (char === '{' && this.#peek() === '%') {
 				this.#next()
 				const start = this.#index
-				const [_, fnKey] = this.#getKeyAndFn()
+				const [key, fnKey] = this.#getKeyAndFn()
 				const end = this.#index - 2
+				if (key.includes('&') && key.includes('-')) {
+					return { msg: `$${key}中不能包含-符号`, start, end }
+				}
 				if (fnKey === 'if') {
 					blockStack.push({ msg: 'if语句缺少end', start, end })
 				} else if (fnKey === 'for') {
@@ -129,15 +132,15 @@ export class Template {
 						if (forStack.length === 0) {
 							throw new XiuError('栈长度错误')
 						}
-						const [_key, _scope] = key.split('&')
+						const [formatKey, _scope] = key.split('&')
 						const scopeIndex = parseInt(_scope) || 1
 						const curStack = forStack[forStack.length - scopeIndex]
 						if (!curStack) {
 							throw new XiuError('栈不存在')
 						}
-						const formatKey = _key.includes('-')
-							? `\'${_key}\'`
-							: _key
+						if (formatKey.includes('-')) {
+							throw new XiuError(`$${formatKey}中不能包含-符号`)
+						}
 						if (!curStack.includes(formatKey)) {
 							curStack.push(formatKey)
 						}
