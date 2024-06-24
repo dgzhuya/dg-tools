@@ -100,7 +100,6 @@ export class BtplEnv {
 			if (!node) {
 				node = this.#module.addInterface({ name: interfaceName })
 			}
-
 			this.#updateInterfaceProp(source, node)
 		} catch (error) {
 			throw error
@@ -158,22 +157,26 @@ export class BtplEnv {
 	}
 
 	#updateInterfaceProp(source: string, node: InterfaceDeclaration) {
-		const fields = Object.entries(new Template(source).findKeys()).map(
-			([key, v]) => ({ key: this.#formatKey(key), type: v })
-		)
-		const keys = fields.map(k => k.key)
-		const props = node
-			.getProperties()
-			.map(p => p.getChildAtIndex(0).getText())
-		fields.forEach(({ key, type }) => {
-			if (!props.includes(key)) {
-				node.addProperty({ name: key, type })
-			}
-		})
-		node.getProperties().forEach(k => {
-			if (!keys.includes(this.#getPropKeyText(k))) {
-				k.remove()
-			}
-		})
+		try {
+			const fields = Object.entries(new Template(source).findKeys()).map(
+				([key, v]) => ({ key: this.#formatKey(key), type: v })
+			)
+			const keys = fields.map(k => k.key)
+			const props = node
+				.getProperties()
+				.map(p => p.getChildAtIndex(0).getText())
+			fields.forEach(({ key, type }) => {
+				if (!props.includes(key)) {
+					node.addProperty({ name: key, type })
+				}
+			})
+			node.getProperties().forEach(k => {
+				if (!keys.includes(this.#getPropKeyText(k))) {
+					k.remove()
+				}
+			})
+		} catch (error) {
+			throw error
+		}
 	}
 }
