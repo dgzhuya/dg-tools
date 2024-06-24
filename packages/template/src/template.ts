@@ -65,6 +65,32 @@ export class Template {
 		throw new Error('未匹配到结尾符号')
 	}
 
+	checkError() {
+		let line = 0
+		const blockStack: { key: string; line: number }[] = []
+		while (this.#hasNext()) {
+			const char = this.#next()
+			if (char === '\n') {
+				line++
+			}
+			if (char === '{' && this.#peek() === '%') {
+				this.#next()
+				const [_, fnKey] = this.#getKeyAndFn()
+				if (fnKey === 'if') {
+					blockStack.push({ key: 'if', line })
+				} else if (fnKey === 'for') {
+					blockStack.push({ key: 'for', line })
+				} else if (fnKey === 'end') {
+					blockStack.pop()
+				}
+			}
+		}
+		if (blockStack.length > 0) {
+			return blockStack[blockStack.length - 1]
+		}
+		return
+	}
+
 	findKeys() {
 		let keys: Record<string, string> = {}
 		let scope = 0
