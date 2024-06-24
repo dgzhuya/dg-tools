@@ -158,11 +158,16 @@ export class BtplEnv {
 
 	#updateInterfaceProp(source: string, node: InterfaceDeclaration) {
 		try {
-			const filedTypeMap = new Template(source).findKeys()
-			const fields = Object.entries(filedTypeMap).map(([key, v]) => ({
-				key: this.#formatKey(key),
-				type: v
-			}))
+			const filedTypeMap: Record<string, string> = {}
+			const fields = Object.entries(new Template(source).findKeys()).map(
+				([key, v]) => ({
+					key: this.#formatKey(key),
+					type: v
+				})
+			)
+			fields.forEach(({ key, type }) => {
+				filedTypeMap[key] = type
+			})
 			const keys = fields.map(k => k.key)
 			const props = node
 				.getProperties()

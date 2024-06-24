@@ -135,8 +135,11 @@ export class Template {
 						if (!curStack) {
 							throw new XiuError('栈不存在')
 						}
-						if (!curStack.includes(_key)) {
-							curStack.push(_key)
+						const formatKey = _key.includes('-')
+							? `\'${_key}\'`
+							: _key
+						if (!curStack.includes(formatKey)) {
+							curStack.push(formatKey)
 						}
 					} else {
 						if (!keys[key]) {
