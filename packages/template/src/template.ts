@@ -75,7 +75,8 @@ export class Template {
 				const [key, fnKey] = this.#getKeyAndFn()
 				const end = this.#index - 2
 				if (key.includes('&') && key.includes('-')) {
-					return { msg: `$${key}中不能包含-符号`, start, end }
+					const realKey = key.split('&')[0]
+					return { msg: `$${realKey}中不能包含-符号`, start, end }
 				}
 				if (fnKey === 'if') {
 					blockStack.push({ msg: 'if语句缺少end', start, end })
