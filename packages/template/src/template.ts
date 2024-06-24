@@ -61,23 +61,39 @@ export class Template {
 		return keys
 	}
 
-	#parseIfStat(config: Config<Kind>, plugins: Record<string, RenderFn>) {
+	#parseIfStat(
+		config: Config<Kind>,
+		plugins: Record<string, RenderFn>,
+		noSkip: boolean
+	) {
 		let result = ''
 		while (this.#hasNext()) {
 			const char = this.#next()
-			if (char === '{' && this.#peek() === '%') {
-				this.#next()
-				const [key, fnKey] = this.#getKeyAndFn()
-				if (fnKey === 'end') {
-					return result
-				}
-				const val = config[key]
-				if (typeof val !== 'string') {
-					throw new Error('传入配置信息错误')
-				}
+			if (noSkip) {
+				if (char === '{' && this.#peek() === '%') {
+					this.#next()
+					const [key, fnKey] = this.#getKeyAndFn()
+					if (fnKey === 'end') {
+						return result
+					}
+					const val = config[key]
+					if (typeof val !== 'string') {
+						throw new Error(`传入${key}配置信息错误`)
+					}
 
-				const fn = plugins[fnKey]
-				result += fn ? fn(val) : val
+					const fn = plugins[fnKey]
+					result += fn ? fn(val) : val
+				} else {
+					result += char
+				}
+			} else {
+				if (char === '{' && this.#peek() === '%') {
+					this.#next()
+					const [_, fnKey] = this.#getKeyAndFn()
+					if (fnKey === 'end') {
+						return result
+					}
+				}
 			}
 		}
 		throw Error('缺少end@')
@@ -92,10 +108,13 @@ export class Template {
 				const [key, fnKey] = this.#getKeyAndFn()
 				const val = config[key]
 				if (fnKey === 'if') {
-					if (val) result += this.#parseIfStat(config, plugins)
+					if (typeof val !== 'boolean') {
+						throw new Error(`传入${key}配置信息错误`)
+					}
+					result += this.#parseIfStat(config, plugins, val)
 				} else {
 					if (typeof val !== 'string') {
-						throw new Error('传入配置信息错误')
+						throw new Error(`传入${key}配置信息错误`)
 					}
 					const fn = plugins[fnKey]
 					result += fn ? fn(val) : val

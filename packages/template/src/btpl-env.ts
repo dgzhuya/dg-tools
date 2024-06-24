@@ -161,7 +161,6 @@ export class BtplEnv {
 		const fields = Object.entries(new Template(source).findKeys()).map(
 			([key, v]) => ({ key: this.#formatKey(key), type: v })
 		)
-		console.log('fields: ', fields)
 		const keys = fields.map(k => k.key)
 		const props = node
 			.getProperties()
