@@ -112,22 +112,26 @@ export class Template {
 				if (fnKey === 'end') {
 					if (forScopeRecord[scope]) {
 						const _key = forScopeRecord[scope]
+						forScopeRecord[scope] = ''
 						const curFor = forStack.pop()
-						if (curFor) {
-							const types = curFor.map(c => `${c}:string`)
-							keys[_key] = types.length
-								? `{${types.join(';')}}[]`
-								: 'unknown[]'
-						} else {
-							throw new XiuError('for栈长度错误')
+						if (!curFor) {
+							throw new XiuError('for栈长度错误', key, fnKey)
 						}
+						const types = curFor.map(c => `${c}:string`)
+						keys[_key] = types.length
+							? `{${types.join(';')}}[]`
+							: 'unknown[]'
 					}
 					scope--
 				}
 
 				if (['for', 'if'].includes(fnKey)) {
 					if (key === '') {
-						throw new XiuError('for/if后面需要跟一个变量')
+						throw new XiuError(
+							'for/if后面需要跟一个变量',
+							key,
+							fnKey
+						)
 					}
 					scope++
 				}
@@ -137,16 +141,16 @@ export class Template {
 						forStack.push([])
 					} else if (fnKey === 'in') {
 						if (forStack.length === 0) {
-							throw new XiuError('栈长度错误')
+							throw new XiuError('栈长度错误', key, fnKey)
 						}
 						const [formatKey, _scope] = key.split('&')
 						const scopeIndex = parseInt(_scope) || 1
 						const curStack = forStack[forStack.length - scopeIndex]
 						if (!curStack) {
-							throw new XiuError('栈不存在')
+							throw new XiuError('栈不存在', key, fnKey)
 						}
 						if (formatKey.includes('-')) {
-							throw new XiuError(`$${formatKey}中不能包含-符号`)
+							throw new XiuError('key中不能包含-符号', key, fnKey)
 						}
 						if (!curStack.includes(formatKey)) {
 							curStack.push(formatKey)
@@ -160,7 +164,7 @@ export class Template {
 			}
 		}
 		if (scope !== 0) {
-			throw new XiuError(`块语句错误,层级${scope}`)
+			throw new XiuError(`块语句错误,层级${scope}`, '', '')
 		}
 		return keys
 	}
@@ -229,6 +233,7 @@ export class Template {
 
 					if (fnKey === 'end') {
 						if (forScopeRecord[renderScope]) {
+							forScopeRecord[renderScope] = false
 							forValStack.pop()
 						}
 						renderScope--
@@ -254,7 +259,11 @@ export class Template {
 						const scope = parseInt(_scope)
 						const upval = forValStack[forValStack.length - scope]
 						if (!upval) {
-							throw new XiuError('for循环层级解析错误')
+							throw new XiuError(
+								'for循环层级解析错误',
+								key,
+								fnKey
+							)
 						}
 						const upvalStr = upval[_key]
 						if (upvalStr === undefined) {
