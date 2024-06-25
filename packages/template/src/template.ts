@@ -79,8 +79,14 @@ export class Template {
 					return { msg: `$${realKey}中不能包含-符号`, start, end }
 				}
 				if (fnKey === 'if') {
+					if (key === '') {
+						return { msg: 'if语句缺少key', start, end }
+					}
 					blockStack.push({ msg: 'if语句缺少end', start, end })
 				} else if (fnKey === 'for') {
+					if (key === '') {
+						return { msg: 'if语句缺少key', start, end }
+					}
 					blockStack.push({ msg: 'for语句缺少end', start, end })
 				} else if (fnKey === 'end') {
 					blockStack.pop()
