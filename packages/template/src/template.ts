@@ -185,7 +185,8 @@ export class Template {
 						continue
 					}
 					if (fnKey === 'end') {
-						if (scope === 1) {
+						if (scope === 0) {
+							renderScope--
 							return ''
 						}
 						scope--
