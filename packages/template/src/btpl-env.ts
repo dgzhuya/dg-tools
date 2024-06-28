@@ -1,4 +1,3 @@
-import { Template } from './template'
 import { readFile, writeFile } from 'fs/promises'
 import { existsSync, writeFileSync } from 'node:fs'
 import { resolveConfigFile, format, resolveConfig } from 'prettier'
@@ -9,6 +8,7 @@ import {
 	SourceFile,
 	PropertySignature
 } from 'ts-morph'
+import { TypeKeyParser } from './template/key'
 
 const fileInfo = `import '@biuxiu/template'
 
@@ -159,12 +159,12 @@ export class BtplEnv {
 	#updateInterfaceProp(source: string, node: InterfaceDeclaration) {
 		try {
 			const filedTypeMap: Record<string, string> = {}
-			const fields = Object.entries(new Template(source).findKeys()).map(
-				([key, v]) => ({
-					key: this.#formatKey(key),
-					type: v
-				})
-			)
+			const fields = Object.entries(
+				new TypeKeyParser(source).parseKeys()
+			).map(([key, v]) => ({
+				key: this.#formatKey(key),
+				type: v
+			}))
 			fields.forEach(({ key, type }) => {
 				filedTypeMap[key] = type
 			})

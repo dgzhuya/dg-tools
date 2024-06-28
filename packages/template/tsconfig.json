@@ -3,6 +3,7 @@
 		"module": "ESNext",
 		"target": "esnext",
 		"resolveJsonModule": true,
+		"experimentalDecorators": true,
 		"declaration": true,
 		"strict": true,
 		"noImplicitAny": true,
@@ -19,6 +20,11 @@
 		"preserveConstEnums": true,
 		"moduleResolution": "node"
 	},
-	"include": ["src", "script"],
-	"exclude": ["node_modules"]
+	"include": [
+		"src",
+		"script"
+	],
+	"exclude": [
+		"node_modules"
+	]
 }

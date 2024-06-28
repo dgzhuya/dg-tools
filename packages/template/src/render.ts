@@ -2,9 +2,9 @@ import { cwd } from 'process'
 import { Kind, Config, RenderFn, RenderPlugin } from './types'
 import { join } from 'path'
 import { readFile } from 'fs/promises'
-import { Template } from './template'
 import { existsSync } from 'node:fs'
 import { readFileSync } from 'fs'
+import { RenderParser } from './template/render'
 
 export class XiuTemplate {
 	#basePath: string
@@ -19,9 +19,10 @@ export class XiuTemplate {
 		this.#basePath = basePath
 	}
 
-	install(plugin: () => RenderPlugin) {
-		const { name, fn } = plugin()
-		this.#plugins[name] = fn
+	install<T extends string>(...plugins: RenderPlugin<T>[]) {
+		plugins.forEach(([name, fn]) => {
+			this.#plugins[name] = fn
+		})
 	}
 
 	#checkFile<T extends Kind>(name: T) {
@@ -45,6 +46,6 @@ export class XiuTemplate {
 	}
 
 	#writeFile<T extends Kind>(source: string, config: Config<T>) {
-		return new Template(source).render(config, this.#plugins)
+		return new RenderParser(source, config, this.#plugins).render()
 	}
 }

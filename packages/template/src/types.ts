@@ -6,11 +6,8 @@ export type Config<T extends Kind> = T extends TemplateKey
 
 export interface TemplateMap {}
 
-export type RenderFn = {
-	(val: string): string
-}
+export type RenderFn<T extends string = string> = (
+	...val: (T extends `${infer _}Int` ? number : string)[]
+) => string
 
-export type RenderPlugin = {
-	name: string
-	fn: RenderFn
-}
+export type RenderPlugin<T extends string = string> = [T, RenderFn<T>]
