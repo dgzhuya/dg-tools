@@ -36,20 +36,6 @@ export class TypeKeyParser extends Parser<void> {
 		}
 	}
 
-	#setValueType(value: LiteralValue, valTp: LiteralType = 'string') {
-		const { token, upper } = value
-		const setMap = upper
-			? this.#forStack[this.#forStack.length - upper]
-			: this.#keymaps
-		const savedType = setMap[token[0]]
-		if (savedType && savedType !== valTp) {
-			const upperKey = upper ? '变' : '常'
-			const msg = `${upperKey}量$1类型已确定为${valTp},不能设置为${savedType}类型`
-			throw new XiuParserError(msg, concatValue(value))
-		}
-		setMap[token[0]] = valTp
-	}
-
 	@SetStatHook('simple')
 	simpleHook(_: BtplToken[], value: LiteralValue) {
 		this.#setValueType(value)
@@ -71,7 +57,7 @@ export class TypeKeyParser extends Parser<void> {
 	@SetStatHook('for')
 	forStatHook(_: BtplToken[], list: LiteralValue) {
 		this.#keymaps[list.token[0]] = 'object'
-		this.#forStack.push({ __main: list.token[0] })
+		this.#forStack.push({ __main: list.token[0], i: 'number' })
 	}
 
 	@SetStatHook('if')
@@ -80,8 +66,7 @@ export class TypeKeyParser extends Parser<void> {
 	}
 
 	@SetStatHook('end')
-	endStatHook(_: BtplToken[], value: LiteralValue) {
-		const { token } = value
+	endStatHook(_: BtplToken[], { token }: LiteralValue) {
 		if (token[0].startsWith('for')) {
 			const forTp = this.#forStack.pop()
 			if (!forTp) throw new XiuParserError('$1循环错误', token)
@@ -92,5 +77,22 @@ export class TypeKeyParser extends Parser<void> {
 			this.#keymaps[key] =
 				list.length === 0 ? 'unknown[]' : `{${list.join(';')}}[]`
 		}
+	}
+
+	#setValueType(value: LiteralValue, valTp: LiteralType = 'string') {
+		const { token, upper } = value
+		const setMap = upper
+			? this.#forStack[this.#forStack.length - upper]
+			: this.#keymaps
+		const savedType = setMap[token[0]]
+		if (upper && token[0] === 'i') {
+			return
+		}
+		if (savedType && savedType !== valTp) {
+			const upperKey = upper ? '变' : '常'
+			const msg = `${upperKey}量$1类型已确定为${savedType},不能设置为${valTp}类型`
+			throw new XiuParserError(msg, concatValue(value))
+		}
+		setMap[token[0]] = valTp
 	}
 }
