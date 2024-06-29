@@ -22,8 +22,8 @@ export abstract class Parser<T> {
 		if: (p, t) => this.#parseIfStat(p, t),
 		end: (p, t) => this.#parseEndStat(p, t),
 		for: (p, t) => this.#parseForStat(p, t),
-		and: (p, t) => this.#parseAndStat(p, t),
-		or: (p, t) => this.#parseOrStat(p, t)
+		and: (p, t) => this.#parseAndOrStat(p, t),
+		or: (p, t) => this.#parseAndOrStat(p, t)
 	}
 
 	protected get pos() {
@@ -40,6 +40,14 @@ export abstract class Parser<T> {
 
 	protected isStat(char: string) {
 		return this.#lexer.checkBlockStart(char)
+	}
+
+	protected jump(pos: number) {
+		return this.#lexer.jump(pos)
+	}
+
+	protected forNext() {
+		this.#forScope++
 	}
 
 	#runHook(name: StatHookKey, tokens: BtplToken[], ...args: LiteralValue[]) {
@@ -137,33 +145,17 @@ export abstract class Parser<T> {
 		)
 	}
 
-	#parseAndStat(prefix: BtplToken, token: BtplToken) {
+	#parseAndOrStat(prefix: BtplToken, token: BtplToken) {
 		const opToken = this.#lexer.verifyNextToken('@[', token)
 		const [params, commas] = this.#parseLiteralList(true)
 		if (params.length === 0) {
 			throw new XiuParserError('$1参数不能为空', token)
 		}
-		const andToken = concatToken(token, opToken, concatValue(...params))
-		this.blockStack.push(andToken)
-		const suffix = this.#lexer.verifyBlockEnd(token)
+		const stackToken = concatToken(token, opToken, concatValue(...params))
+		this.blockStack.push(stackToken)
+		const suffix = this.#lexer.verifyBlockEnd(stackToken)
 		return this.#runHook(
-			'and',
-			[prefix, token, opToken, suffix, ...commas],
-			...params
-		)
-	}
-
-	#parseOrStat(prefix: BtplToken, token: BtplToken) {
-		const opToken = this.#lexer.verifyNextToken('@[', token)
-		const [params, commas] = this.#parseLiteralList(true)
-		if (params.length === 0) {
-			throw new XiuParserError('$1参数不能为空', token)
-		}
-		const orToken = concatToken(token, opToken, concatValue(...params))
-		this.blockStack.push(orToken)
-		const suffix = this.#lexer.verifyBlockEnd(token)
-		return this.#runHook(
-			'or',
+			token[0] === 'and' ? 'and' : 'or',
 			[prefix, token, opToken, suffix, ...commas],
 			...params
 		)
@@ -218,6 +210,23 @@ export abstract class Parser<T> {
 			return [false, this.#parseFuncStat(prefix, token)]
 		}
 		return [false, this.#parseSimpleStat(prefix, token)]
+	}
+
+	protected codeSkip() {
+		this.#lexer.verifyNextToken('{%')
+		this.#lexer.skipEmpty()
+		if (this.#lexer.checkToken('$')) {
+			this.#lexer.goNext()
+		}
+		const token = this.#lexer.nextToken()
+		while (this.#lexer.hasNext()) {
+			const char = this.#lexer.next()
+			if (char === '%' && this.#lexer.peek() === '}') {
+				this.#lexer.goNext()
+				return token[0]
+			}
+		}
+		throw new XiuParserError('$1缺少结束符', token)
 	}
 
 	abstract parseBlock(): T
