@@ -12,7 +12,7 @@ export class XiuError extends Error {
 		this.funcKey = funcKey
 	}
 
-	show() {
+	get message() {
 		return `key:${this.key};func=${this.funcKey};\nmsg=${this.msg}`
 	}
 }
@@ -27,5 +27,9 @@ export class XiuParserError extends Error {
 		this.msg = msg.replace('$1', token[0])
 		this.start = token[1]
 		this.end = token[2]
+	}
+
+	get message() {
+		return `msg=${this.msg}\tstart=${this.start}\tend=${this.end}`
 	}
 }
