@@ -11,8 +11,10 @@ type LiteralValueResult<T extends LiteralType> = T extends 'string'
 		: T extends 'number'
 			? number
 			: T extends 'object'
-				? unknown[]
+				? any[]
 				: void
+
+type CondType = 'for' | 'and' | 'if' | 'or'
 
 export class RenderParser extends Parser<string> {
 	#plugins: Record<string, Function>
@@ -49,6 +51,29 @@ export class RenderParser extends Parser<string> {
 		return result
 	}
 
+	skipBlock(type: CondType): string {
+		let scope = 0
+		const start = this.pos
+		while (this.hasNext()) {
+			const char = this.next()
+			if (this.isStat(char)) {
+				const tokenKey = this.codeSkip()
+				if (tokenKey === 'end') {
+					if (scope === 0) {
+						this.blockStack.pop()
+						return ''
+					}
+					scope--
+				}
+				if (['for', 'and', 'if', 'or'].includes(tokenKey)) {
+					scope++
+				}
+			}
+		}
+		const token: BtplToken = [type, start, this.pos]
+		throw new XiuParserError(`$1条件缺少结束符,跳过失败`, token)
+	}
+
 	render() {
 		return this.parseBlock()
 	}
@@ -69,7 +94,58 @@ export class RenderParser extends Parser<string> {
 		return fn(...list)
 	}
 
-	andHook() {}
+	@SetStatHook('and')
+	@SetStatHook('or')
+	andOrHook([_, [tokenKey]]: BtplToken[], ...params: LiteralValue[]) {
+		const isAnd = tokenKey === 'and'
+		const val = params
+			.map(p => this.#getValueByConfig(p, 'boolean'))
+			.reduce((p, c) => (isAnd ? p && c : p || c))
+		return val ? this.parseBlock() : this.skipBlock(isAnd ? 'and' : 'or')
+	}
+
+	@SetStatHook('if')
+	ifStatHook(_: BtplToken[], cond: LiteralValue) {
+		const val = this.#getValueByConfig(cond, 'boolean')
+		return val ? this.parseBlock() : this.skipBlock('if')
+	}
+
+	@SetStatHook('for')
+	forStatHook(_: BtplToken[], list: LiteralValue) {
+		let result = ''
+		const val = this.#getValueByConfig(list, 'object')
+		const curForIndex = this.#forStack.length
+		if (val.length === 0) {
+			return this.skipBlock('for')
+		}
+		const startPos = this.pos
+		this.#forStack.push('')
+		for (let i = 0; i < val.length; i++) {
+			let item = val[i]
+			if (item && typeof item === 'object') {
+				item['i'] = i
+			} else {
+				item = { i }
+			}
+			this.#forStack[curForIndex] = item
+			result += this.parseBlock()
+			if (i < val.length - 1) {
+				this.jump(startPos)
+				this.forNext()
+			}
+		}
+		return result
+	}
+
+	@SetStatHook('end')
+	endStatHook(_: BtplToken[], { token }: LiteralValue) {
+		if (token[0].startsWith('for')) {
+			if (this.#forStack.length === 0) {
+				throw new XiuParserError('$1循环错误', token)
+			}
+			this.#forStack.pop()
+		}
+	}
 
 	#getValueByConfig<T extends LiteralType>(
 		value: LiteralValue,
@@ -80,11 +156,25 @@ export class RenderParser extends Parser<string> {
 			? this.#forStack[this.#forStack.length - upper]
 			: this.#config
 		const renderVal = source[token[0]]
-		if (!renderVal) {
+		if (
+			type === 'string' &&
+			typeof renderVal === 'number' &&
+			upper &&
+			token[0] === 'i'
+		) {
+			return `${renderVal}` as LiteralValueResult<T>
+		}
+		if (renderVal === undefined) {
+			console.log(renderVal, source)
 			throw new XiuParserError('$1的值不存在', token)
 		}
 		if (typeof renderVal !== type) {
 			const msg = `$1的类型与获取的值${renderVal}类型不匹配`
+			throw new XiuParserError(msg, token)
+		}
+
+		if (type === 'object' && !Array.isArray(renderVal)) {
+			const msg = `$1的类型应该为数组`
 			throw new XiuParserError(msg, token)
 		}
 		if (negation && type === 'boolean') {
