@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'fs/promises'
+import { writeFile } from 'fs/promises'
 import { existsSync, writeFileSync } from 'node:fs'
 import { resolveConfigFile, format, resolveConfig } from 'prettier'
 import {
@@ -107,11 +107,9 @@ export class BtplEnv {
 	}
 
 	async save() {
-		await this.#source.save()
-		const text = await readFile(this.#path, 'utf-8')
 		const file = await resolveConfigFile(this.#path)
 		const options = file ? await resolveConfig(file) : {}
-		const formatted = await format(text, {
+		const formatted = await format(this.#source.getFullText(), {
 			...options,
 			parser: 'typescript'
 		})
