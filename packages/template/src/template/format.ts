@@ -83,17 +83,15 @@ export class FormatParser extends Parser {
 		const tabChar = '\t'.repeat(this.stack.length - startPos)
 		this.#curLine += tabChar
 		this.#curLine += `{% ${content} %}`
+		const pos = this.pos
 		while ([' ', '\t'].includes(this.peek())) {
 			this.goNext()
 		}
-		if (this.peek() === '\n') {
+		if (this.peek() === '\n' || this.peek() === '\r') {
 			this.goNext()
-		}
-		if (this.peek() === '\r') {
-			this.goNext()
-			if (this.peek() === '\n') {
-				this.goNext()
-			}
+			if (this.peek() === '\n') this.goNext()
+		} else {
+			this.jump(pos)
 		}
 		this.#pushLine()
 	}
