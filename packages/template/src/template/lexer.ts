@@ -83,11 +83,11 @@ export class TemplateLexer {
 		return false
 	}
 
-	skipEmpty(): string {
+	skipEmpty() {
 		const start = this.#pos
 		while (this.hasNext()) {
 			const char = this.#source[this.#pos]
-			if (![' ', '\t'].includes(char)) return ''
+			if (![' ', '\t'].includes(char)) return
 			this.#pos++
 		}
 		throw new XiuParserError('解析错误', ['', start, this.#pos])
