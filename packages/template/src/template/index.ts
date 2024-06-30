@@ -3,22 +3,22 @@ import { TemplateLexer } from './lexer'
 import { concatToken, concatValue } from './utils'
 import type { BtplToken, LiteralValue, StatHookKey } from './types'
 
-type ParserFuncType<T> = {
-	(prefix: BtplToken, token: BtplToken): T | void
+type ParserFuncType = {
+	(prefix: BtplToken, token: BtplToken): void
 }
 
-type HookFunc<T> = {
-	(tokens: BtplToken[], ...args: LiteralValue[]): T | void
+type HookFunc = {
+	(tokens: BtplToken[], ...args: LiteralValue[]): void
 }
 
-export abstract class Parser<T> {
-	protected blockStack: BtplToken[] = []
+export abstract class Parser {
+	protected stack: BtplToken[] = []
 
 	#lexer: TemplateLexer
-	#statHooks: Record<string, HookFunc<T>> = {}
+	#statHooks: Record<string, HookFunc> = {}
 	#forScope = 0
 
-	#keywords: Record<string, ParserFuncType<T>> = {
+	#keywords: Record<string, ParserFuncType> = {
 		if: (p, t) => this.#parseIfStat(p, t),
 		end: (p, t) => this.#parseEndStat(p, t),
 		for: (p, t) => this.#parseForStat(p, t),
@@ -28,6 +28,14 @@ export abstract class Parser<T> {
 
 	protected get pos() {
 		return this.#lexer.pc
+	}
+
+	protected peek() {
+		return this.#lexer.peek()
+	}
+
+	protected goNext() {
+		this.#lexer.goNext()
 	}
 
 	protected hasNext() {
@@ -152,7 +160,7 @@ export abstract class Parser<T> {
 			throw new XiuParserError('$1参数不能为空', token)
 		}
 		const stackToken = concatToken(token, opToken, concatValue(...params))
-		this.blockStack.push(stackToken)
+		this.stack.push(stackToken)
 		const suffix = this.#lexer.verifyBlockEnd(stackToken)
 		return this.#runHook(
 			token[0] === 'and' ? 'and' : 'or',
@@ -166,7 +174,7 @@ export abstract class Parser<T> {
 		this.#forScope++
 		const list = this.#parseLiteral()
 		const forToken = concatToken(token, opToken, concatValue(list))
-		this.blockStack.push(forToken)
+		this.stack.push(forToken)
 		const suffix = this.#lexer.verifyBlockEnd(token)
 		return this.#runHook('for', [prefix, token, opToken, suffix], list)
 	}
@@ -175,14 +183,14 @@ export abstract class Parser<T> {
 		const opToken = this.#lexer.verifyNextToken('@', token)
 		const cond = this.#parseLiteral(true)
 		const ifToken = concatToken(token, opToken, concatValue(cond))
-		this.blockStack.push(ifToken)
+		this.stack.push(ifToken)
 		const suffix = this.#lexer.verifyBlockEnd(token)
 		return this.#runHook('if', [prefix, token, opToken, suffix], cond)
 	}
 
 	#parseEndStat(prefix: BtplToken, token: BtplToken) {
 		const opToken = this.#lexer.verifyNextToken('@', token)
-		const stackType = this.blockStack.pop()
+		const stackType = this.stack.pop()
 		if (!stackType) throw new XiuParserError('end语句不在范围内', token)
 
 		if (stackType[0].startsWith('for')) {
@@ -197,19 +205,25 @@ export abstract class Parser<T> {
 		})
 	}
 
-	protected parseStat(): [boolean, T | void] {
+	protected parseStat(): boolean {
 		const prefix = this.#lexer.verifyNextToken('{%')
 		this.#lexer.skipEmpty()
 		if (this.#lexer.checkToken('$')) {
-			return [false, this.#parseSimpleStat(prefix)]
+			this.#parseSimpleStat(prefix)
+			return false
 		}
 		const token = this.#lexer.nextToken()
 		const parseFunc = this.#keywords[token[0]]
-		if (parseFunc) return [token[0] === 'end', parseFunc(prefix, token)]
-		if (this.#lexer.checkToken('@')) {
-			return [false, this.#parseFuncStat(prefix, token)]
+		if (parseFunc) {
+			parseFunc(prefix, token)
+			return token[0] === 'end'
 		}
-		return [false, this.#parseSimpleStat(prefix, token)]
+		if (this.#lexer.checkToken('@')) {
+			this.#parseFuncStat(prefix, token)
+		} else {
+			this.#parseSimpleStat(prefix, token)
+		}
+		return false
 	}
 
 	protected codeSkip() {
@@ -229,5 +243,12 @@ export abstract class Parser<T> {
 		throw new XiuParserError('$1缺少结束符', token)
 	}
 
-	abstract parseBlock(): T
+	protected checkStack() {
+		if (this.stack.length !== 0) {
+			const token = this.stack[this.stack.length - 1]
+			throw new XiuParserError('$1语句缺少end', token)
+		}
+	}
+
+	protected abstract parseBlock(): void
 }
