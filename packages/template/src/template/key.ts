@@ -3,7 +3,7 @@ import { XiuParserError } from '../error'
 import type { BtplToken, LiteralType, LiteralValue } from './types'
 import { concatValue, SetStatHook } from './utils'
 
-export class TypeKeyParser extends Parser<void> {
+export class TypeKeyParser extends Parser {
 	#keymaps: Record<string, string> = {}
 	#forStack: Record<string, string>[] = []
 
@@ -30,10 +30,7 @@ export class TypeKeyParser extends Parser<void> {
 				this.parseStat()
 			}
 		}
-		if (this.blockStack.length !== 0) {
-			const token = this.blockStack[this.blockStack.length - 1]
-			throw new XiuParserError('$1语句缺少end', token)
-		}
+		this.checkStack()
 	}
 
 	@SetStatHook('simple')
@@ -55,9 +52,35 @@ export class TypeKeyParser extends Parser<void> {
 	}
 
 	@SetStatHook('for')
-	forStatHook(_: BtplToken[], list: LiteralValue) {
-		this.#keymaps[list.token[0]] = 'object'
-		this.#forStack.push({ __main: list.token[0], i: 'number' })
+	forStatHook(_: BtplToken[], { token }: LiteralValue) {
+		if (this.#forStack.length > 0) {
+			const forKeys = this.#forStack.map(i => i['__main'])
+			if (forKeys.includes(token[0])) {
+				throw new XiuParserError('循环$1不能嵌套自身', token)
+			}
+		}
+		const forTypeRecord: Record<string, string> = {
+			__main: token[0]
+		}
+		forTypeRecord['i'] = 'number'
+		const oldForType = this.#keymaps[token[0]]
+		if (oldForType) {
+			if (['string', 'boolean', 'number'].includes(oldForType)) {
+				const msg = `常量$1类型已确定为${oldForType},不能设置为数组类型`
+				throw new XiuParserError(msg, token)
+			}
+			if (oldForType !== 'unknown[]') {
+				const oldTpList = oldForType
+					.replace('{', '')
+					.replace('}[]', '')
+					.split(';')
+					.map(s => s.split(':'))
+				oldTpList.forEach(([key, val]) => {
+					forTypeRecord[key] = val
+				})
+			}
+		}
+		this.#forStack.push(forTypeRecord)
 	}
 
 	@SetStatHook('if')
@@ -74,8 +97,8 @@ export class TypeKeyParser extends Parser<void> {
 			const list = Object.entries(forTp)
 				.filter(([key, _]) => !['__main', 'i'].includes(key))
 				.map(([k, v]) => `${k}:${v}`)
-			this.#keymaps[key] =
-				list.length === 0 ? 'unknown[]' : `{${list.join(';')}}[]`
+			const listType = list.length ? `{${list.join(';')}}[]` : 'unknown[]'
+			this.#keymaps[key] = listType
 		}
 	}
 
