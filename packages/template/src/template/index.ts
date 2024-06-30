@@ -3,22 +3,18 @@ import { TemplateLexer } from './lexer'
 import { concatToken, concatValue } from './utils'
 import type { BtplToken, LiteralValue, StatHookKey } from './types'
 
-type ParserFuncType = {
-	(prefix: BtplToken, token: BtplToken): void
-}
+type ParserFuncType<T> = (prefix: BtplToken, token: BtplToken) => void | T
 
-type HookFunc = {
-	(tokens: BtplToken[], ...args: LiteralValue[]): void
-}
+type HookFunc<T> = (tokens: BtplToken[], ...args: LiteralValue[]) => void | T
 
-export abstract class Parser {
+export abstract class Parser<T = void> {
 	protected stack: BtplToken[] = []
 
 	#lexer: TemplateLexer
-	#statHooks: Record<string, HookFunc> = {}
+	#statHooks: Record<string, HookFunc<T>> = {}
 	#forScope = 0
 
-	#keywords: Record<string, ParserFuncType> = {
+	#keywords: Record<string, ParserFuncType<T>> = {
 		if: (p, t) => this.#parseIfStat(p, t),
 		end: (p, t) => this.#parseEndStat(p, t),
 		for: (p, t) => this.#parseForStat(p, t),
@@ -205,25 +201,20 @@ export abstract class Parser {
 		})
 	}
 
-	protected parseStat(): boolean {
+	protected parseStat(): [boolean, T | void] {
 		const prefix = this.#lexer.verifyNextToken('{%')
 		this.#lexer.skipEmpty()
 		if (this.#lexer.checkToken('$')) {
-			this.#parseSimpleStat(prefix)
-			return false
+			return [false, this.#parseSimpleStat(prefix)]
 		}
 		const token = this.#lexer.nextToken()
 		const parseFunc = this.#keywords[token[0]]
-		if (parseFunc) {
-			parseFunc(prefix, token)
-			return token[0] === 'end'
-		}
+		if (parseFunc) return [token[0] === 'end', parseFunc(prefix, token)]
+
 		if (this.#lexer.checkToken('@')) {
-			this.#parseFuncStat(prefix, token)
-		} else {
-			this.#parseSimpleStat(prefix, token)
+			return [false, this.#parseFuncStat(prefix, token)]
 		}
-		return false
+		return [false, this.#parseSimpleStat(prefix, token)]
 	}
 
 	protected codeSkip() {
