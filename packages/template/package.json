@@ -4,7 +4,7 @@
 	"description": "一个模板工具",
 	"main": "dist/index.js",
 	"bin": {
-		"template-init": "dist/bin/index.js"
+		"btpl": "dist/bin/index.js"
 	},
 	"scripts": {
 		"build": "tsx script/build.ts"
