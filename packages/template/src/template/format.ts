@@ -37,6 +37,9 @@ export class FormatParser extends Parser {
 				this.#curLine += char
 			}
 		}
+		if (!this.#isEmptyLine) {
+			this.#pushLine()
+		}
 		this.checkStack()
 	}
 
@@ -87,7 +90,10 @@ export class FormatParser extends Parser {
 		while ([' ', '\t'].includes(this.peek())) {
 			this.goNext()
 		}
-		if (this.peek() === '\n' || this.peek() === '\r') {
+		const char = this.peek()
+		if (char === '\n') {
+			this.goNext()
+		} else if (char === '\r') {
 			this.goNext()
 			if (this.peek() === '\n') this.goNext()
 		} else {
