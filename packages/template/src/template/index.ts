@@ -50,7 +50,8 @@ export abstract class Parser<T = void> {
 		return this.#lexer.jump(pos)
 	}
 
-	protected forNext() {
+	protected forNext(stackToken: BtplToken) {
+		this.stack.push(stackToken)
 		this.#forScope++
 	}
 
@@ -115,7 +116,6 @@ export abstract class Parser<T = void> {
 			const item = this.#parseLiteral(allowNegation)
 			list.push(item)
 			if (this.#lexer.checkToken(']')) {
-				symbols.unshift(this.#lexer.verifyNextToken(']'))
 				return [list, symbols]
 			}
 			symbols.push(this.#lexer.verifyNextToken(',', item.token))
@@ -139,9 +139,9 @@ export abstract class Parser<T = void> {
 		if (params.length === 0) {
 			throw new XiuParserError('函数$1缺少参数', token)
 		}
-		const suffix = this.#lexer.verifyBlockEnd(
-			params[params.length - 1].token
-		)
+		const endParam = params[params.length - 1].token
+		const bracketEnd = this.#lexer.verifyNextToken(']', endParam)
+		const suffix = this.#lexer.verifyBlockEnd(bracketEnd)
 		return this.#runHook(
 			'func',
 			[prefix, token, opToken, suffix, ...commas],
@@ -155,12 +155,27 @@ export abstract class Parser<T = void> {
 		if (params.length === 0) {
 			throw new XiuParserError('$1参数不能为空', token)
 		}
-		const stackToken = concatToken(token, opToken, concatValue(...params))
+		const mixedParams: BtplToken[] = []
+		for (let i = 0; i < params.length; i++) {
+			const { token } = params[i]
+			mixedParams.push(token)
+			if (i < commas.length) {
+				mixedParams.push(commas[i])
+			}
+		}
+		const endParam = params[params.length - 1].token
+		const bracketEnd = this.#lexer.verifyNextToken(']', endParam)
+		const stackToken = concatToken(
+			token,
+			opToken,
+			...mixedParams,
+			bracketEnd
+		)
 		this.stack.push(stackToken)
 		const suffix = this.#lexer.verifyBlockEnd(stackToken)
 		return this.#runHook(
 			token[0] === 'and' ? 'and' : 'or',
-			[prefix, token, opToken, suffix, ...commas],
+			[prefix, token, opToken, suffix, ...commas, stackToken],
 			...params
 		)
 	}
@@ -169,19 +184,27 @@ export abstract class Parser<T = void> {
 		const opToken = this.#lexer.verifyNextToken('@', token)
 		this.#forScope++
 		const list = this.#parseLiteral()
-		const forToken = concatToken(token, opToken, concatValue(list))
-		this.stack.push(forToken)
+		const stackToken = concatToken(token, opToken, concatValue(list))
+		this.stack.push(stackToken)
 		const suffix = this.#lexer.verifyBlockEnd(token)
-		return this.#runHook('for', [prefix, token, opToken, suffix], list)
+		return this.#runHook(
+			'for',
+			[prefix, token, opToken, suffix, stackToken],
+			list
+		)
 	}
 
 	#parseIfStat(prefix: BtplToken, token: BtplToken) {
 		const opToken = this.#lexer.verifyNextToken('@', token)
 		const cond = this.#parseLiteral(true)
-		const ifToken = concatToken(token, opToken, concatValue(cond))
-		this.stack.push(ifToken)
+		const stackToken = concatToken(token, opToken, concatValue(cond))
+		this.stack.push(stackToken)
 		const suffix = this.#lexer.verifyBlockEnd(token)
-		return this.#runHook('if', [prefix, token, opToken, suffix], cond)
+		return this.#runHook(
+			'if',
+			[prefix, token, opToken, suffix, stackToken],
+			cond
+		)
 	}
 
 	#parseEndStat(prefix: BtplToken, token: BtplToken) {
