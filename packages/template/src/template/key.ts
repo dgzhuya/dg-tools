@@ -23,7 +23,7 @@ export class TypeKeyParser extends Parser {
 		}
 	}
 
-	parseBlock() {
+	protected parseBlock() {
 		while (this.hasNext()) {
 			const char = this.next()
 			if (this.isStat(char)) {
@@ -34,12 +34,12 @@ export class TypeKeyParser extends Parser {
 	}
 
 	@SetStatHook('simple')
-	simpleHook(_: BtplToken[], value: LiteralValue) {
+	protected simpleHook(_: BtplToken[], value: LiteralValue) {
 		this.#setValueType(value)
 	}
 
 	@SetStatHook('func')
-	funcHook([_, [key]]: BtplToken[], ...params: LiteralValue[]) {
+	protected funcHook([_, [key]]: BtplToken[], ...params: LiteralValue[]) {
 		params.forEach(p => {
 			this.#setValueType(p, key.endsWith('Int') ? 'number' : 'string')
 		})
@@ -47,12 +47,12 @@ export class TypeKeyParser extends Parser {
 
 	@SetStatHook('or')
 	@SetStatHook('and')
-	andOrStatHook(_: BtplToken, ...params: LiteralValue[]) {
+	protected andOrStatHook(_: BtplToken, ...params: LiteralValue[]) {
 		params.forEach(p => this.#setValueType(p, 'boolean'))
 	}
 
 	@SetStatHook('for')
-	forStatHook(_: BtplToken[], { token }: LiteralValue) {
+	protected forStatHook(_: BtplToken[], { token }: LiteralValue) {
 		if (this.#forStack.length > 0) {
 			const forKeys = this.#forStack.map(i => i['__main'])
 			if (forKeys.includes(token[0])) {
@@ -84,12 +84,12 @@ export class TypeKeyParser extends Parser {
 	}
 
 	@SetStatHook('if')
-	ifStatHook(_: BtplToken[], cond: LiteralValue) {
+	protected ifStatHook(_: BtplToken[], cond: LiteralValue) {
 		this.#setValueType(cond, 'boolean')
 	}
 
 	@SetStatHook('end')
-	endStatHook(_: BtplToken[], { token }: LiteralValue) {
+	protected endStatHook(_: BtplToken[], { token }: LiteralValue) {
 		if (token[0].startsWith('for')) {
 			const forTp = this.#forStack.pop()
 			if (!forTp) throw new XiuParserError('$1循环错误', token)

@@ -18,7 +18,7 @@ export class FormatParser extends Parser {
 		return this.#formatList.join('\n')
 	}
 
-	parseBlock() {
+	protected parseBlock() {
 		while (this.hasNext()) {
 			let char = this.next()
 			if (this.isStat(char)) {
@@ -44,32 +44,35 @@ export class FormatParser extends Parser {
 	}
 
 	@SetStatHook('simple')
-	simpleHook(_: BtplToken[], value: LiteralValue) {
-		this.addBrace(concatValue(value)[0], true)
+	protected simpleHook(_: BtplToken[], value: LiteralValue) {
+		this.#addBrace(concatValue(value)[0], true)
 	}
 
 	@SetStatHook('or')
 	@SetStatHook('and')
 	@SetStatHook('func')
-	funcAndOrHook([_, token, op]: BtplToken[], ...params: LiteralValue[]) {
+	protected funcAndOrHook(
+		[_, token, op]: BtplToken[],
+		...params: LiteralValue[]
+	) {
 		const name = concatToken(token, op)[0]
 		const args = params.map(p => concatValue(p)[0]).join(', ')
 		const isSimple = !['and', 'or'].includes(token[0])
-		this.addBrace(name + args + ']', isSimple)
+		this.#addBrace(name + args + ']', isSimple)
 	}
 
 	@SetStatHook('if')
 	@SetStatHook('for')
-	ifStatHook([_, [key]]: BtplToken[], { token }: LiteralValue) {
-		this.addBrace(`${key}@${token[0]}`)
+	protected ifStatHook([_, [key]]: BtplToken[], { token }: LiteralValue) {
+		this.#addBrace(`${key}@${token[0]}`)
 	}
 
 	@SetStatHook('end')
-	endStatHook() {
-		this.addBrace('end@', false, 0)
+	protected endStatHook() {
+		this.#addBrace('end@', false, 0)
 	}
 
-	addBrace(content: string, isSimple = false, startPos = 1) {
+	#addBrace(content: string, isSimple = false, startPos = 1) {
 		if (isSimple) {
 			this.#curLine += `{% ${content} %}`
 			return
