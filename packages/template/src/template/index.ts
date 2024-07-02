@@ -95,8 +95,11 @@ export abstract class Parser<T = void> {
 			upperToken[2] = this.#lexer.pc
 			prefix.push(upperToken)
 			const token = this.#lexer.nextToken()
+			if (upper && token[0].includes('-')) {
+				throw new XiuParserError('变量$1不能包含`-`符号', token)
+			}
 			if (upper > this.#forScope) {
-				throw new XiuParserError(`变量$1超出作用域`, token)
+				throw new XiuParserError('变量$1超出作用域', token)
 			}
 			return negation
 				? { token, prefix, upper, negation }
