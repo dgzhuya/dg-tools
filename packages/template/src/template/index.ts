@@ -147,7 +147,7 @@ export abstract class Parser<T = void> {
 		const suffix = this.#lexer.verifyBlockEnd(bracketEnd)
 		return this.#runHook(
 			'func',
-			[prefix, token, opToken, suffix, ...commas],
+			[prefix, token, opToken, endParam, suffix, ...commas],
 			...params
 		)
 	}
@@ -178,7 +178,7 @@ export abstract class Parser<T = void> {
 		const suffix = this.#lexer.verifyBlockEnd(stackToken)
 		return this.#runHook(
 			token[0] === 'and' ? 'and' : 'or',
-			[prefix, token, opToken, suffix, ...commas, stackToken],
+			[prefix, token, opToken, endParam, suffix, ...commas, stackToken],
 			...params
 		)
 	}
