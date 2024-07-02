@@ -23,7 +23,18 @@ export class SyntaxParser extends Parser {
 	#syntaxes: SyntaxToken[] = []
 
 	getSyntaxes() {
+		this.parseBlock()
 		return this.#syntaxes
+	}
+
+	protected parseBlock(): void {
+		while (this.hasNext()) {
+			const char = this.next()
+			if (this.isStat(char)) {
+				this.parseStat()
+			}
+		}
+		this.checkStack()
 	}
 
 	#pushSyntaxToken(
@@ -60,7 +71,7 @@ export class SyntaxParser extends Parser {
 	}
 
 	@SetStatHook('simple')
-	simpleStatHook(tokens: BtplToken[], value: LiteralValue) {
+	protected simpleStatHook(tokens: BtplToken[], value: LiteralValue) {
 		tokens.forEach(t => {
 			this.#pushSyntaxToken(t, 'keyword.other')
 		})
@@ -70,7 +81,7 @@ export class SyntaxParser extends Parser {
 	@SetStatHook('or')
 	@SetStatHook('and')
 	@SetStatHook('func')
-	andOrStatHook(tokens: BtplToken[], ...values: LiteralValue[]) {
+	protected andOrStatHook(tokens: BtplToken[], ...values: LiteralValue[]) {
 		const isAndOr = ['and', 'or'].includes(tokens[1][0])
 		const funcType = isAndOr ? 'function' : 'keyword.control'
 		this.#pushSyntaxToken(tokens[0], 'keyword.other')
@@ -87,7 +98,7 @@ export class SyntaxParser extends Parser {
 	@SetStatHook('if')
 	@SetStatHook('for')
 	@SetStatHook('end')
-	ifStatHook(tokens: BtplToken[], value: LiteralValue) {
+	protected ifStatHook(tokens: BtplToken[], value: LiteralValue) {
 		this.#pushSyntaxToken(tokens[0], 'keyword.other')
 		this.#pushSyntaxToken(tokens[1], 'keyword.control')
 		this.#pushSyntaxToken(tokens[2], 'keyword.operator')
@@ -95,9 +106,5 @@ export class SyntaxParser extends Parser {
 		if (tokens[1][0] !== 'end') {
 			this.#pushSyntaxVal(value)
 		}
-	}
-
-	protected parseBlock(): void {
-		throw new Error('Method not implemented.')
 	}
 }
