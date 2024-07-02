@@ -61,10 +61,14 @@ export class FormatParser extends Parser {
 		this.#addBrace(name + args + ']', isSimple)
 	}
 
-	@SetStatHook('if')
 	@SetStatHook('for')
-	protected ifStatHook([_, [key]]: BtplToken[], { token }: LiteralValue) {
+	protected forStatHook([_, [key]]: BtplToken[], { token }: LiteralValue) {
 		this.#addBrace(`${key}@${token[0]}`)
+	}
+
+	@SetStatHook('if')
+	protected ifStatHook(_: BtplToken[], cond: LiteralValue) {
+		this.#addBrace(`if@${concatValue(cond)[0]}`)
 	}
 
 	@SetStatHook('end')
