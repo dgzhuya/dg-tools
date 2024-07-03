@@ -14,14 +14,12 @@ type LiteralValueResult<T extends LiteralType> = T extends 'string'
 				? any[]
 				: void
 
+let isEatEnd = false
 export class RenderParser extends Parser<string> {
 	#plugins: Record<string, Function>
 	#config: Config<Kind>
 	#forStack: any[] = []
-	#curLine = ''
-	#isEmptyLine = true
-	#renderList: string[][] = []
-	#prevIsBlock = false
+	#renderCache: string[][] = []
 
 	constructor(
 		source: string,
@@ -31,107 +29,104 @@ export class RenderParser extends Parser<string> {
 		super(source)
 		this.#config = config
 		this.#plugins = plugins
-		this.#renderList.push([''])
+		this.#renderCache.push([])
 	}
 
 	render() {
 		return this.parseBlock()
 	}
 
-	#pushLine(notNext = false) {
-		this.#lastRenderList.push(this.#curLine)
-		this.#curLine = ''
-		this.#isEmptyLine = true
-		if (notNext) {
-			this.#lastRenderList[0] += `$${this.#lastRenderList.length}`
+	#pushLine(content: string, append = false) {
+		if (append && this.#cache.length) {
+			this.#cache[this.#cache.length - 1] += content
+			return
 		}
+		this.#cache.push(content)
 	}
 
-	#listToStr(list: string[]) {
-		const pos = list[0]
-			.split('$')
-			.filter(i => i)
-			.map(s => parseInt(s))
-		let result = list[1] || ''
-		for (let i = 2; i < list.length; i++) {
-			if (!pos.includes(i)) {
-				result += '\n'
-			}
-			result += list[i]
-		}
-		return result
+	get #cache() {
+		return this.#renderCache[this.#renderCache.length - 1]
 	}
 
-	get #lastRenderList() {
-		const index = this.#renderList.length ? this.#renderList.length - 1 : 0
-		return this.#renderList[index]
-	}
-
-	#clearLine() {
-		if (this.#isEmptyLine) {
-			this.#curLine = ''
-			if (!this.#prevIsBlock) {
-				this.#lastRenderList[0] += `$${this.#lastRenderList.length}`
-			}
-		}
+	#clearStatEnd() {
 		const pos = this.pos
 		while ([' ', '\t'].includes(this.peek())) {
 			this.goNext()
 		}
 		const char = this.peek()
-		if (char === '\n') {
+		if (['\n', '\r'].includes(char)) {
 			this.goNext()
-		} else if (char === '\r') {
-			this.goNext()
-			if (this.peek() === '\n') this.goNext()
+			if (char === '\r' && this.peek() === '\n') {
+				this.goNext()
+			}
+			isEatEnd = true
 		} else {
 			this.jump(pos)
 		}
-		this.#prevIsBlock = true
 	}
 
 	protected parseBlock(isNest = false): string {
-		if (isNest) this.#renderList.push([''])
+		if (isNest) {
+			this.#renderCache.push([])
+		}
+		let curLine = ''
+		let isEmpty = true
+		let isAppend = false
+
+		const resetLine = () => {
+			curLine = ''
+			isEmpty = true
+			isAppend = false
+		}
 		while (this.hasNext()) {
 			const char = this.next()
 			if (this.isStat(char)) {
-				if (!isNest || !this.#isEmptyLine) {
-					this.#prevIsBlock = false
+				const [key, stat] = this.parseStat()
+				if (!key) {
+					isEatEnd = false
 				}
-				const [isEnd, stat] = this.parseStat()
-				if (isEnd) {
-					this.#pushLine()
-					const top = this.#renderList.pop()
-					const res = top ? this.#listToStr(top) : ''
-					return res
+
+				if (['if', 'for', 'and', 'or', 'end'].includes(key)) {
+					isAppend = true
+					if (isEmpty) curLine = ''
+					curLine += stat || ''
+					this.#pushLine(curLine, true)
+					isEmpty = true
+					curLine = ''
+					if (key === 'end') {
+						const res = this.#cache.join('\n')
+						this.#renderCache.pop()
+						return res
+					}
+					continue
 				}
-				this.#curLine += stat
-				this.#pushLine(true)
-			} else if (char === '\n') {
-				if (!this.#isEmptyLine) {
-					this.#prevIsBlock = false
+				curLine += stat || ''
+				isEmpty = false
+				continue
+			}
+			if (['\r', '\n'].includes(char)) {
+				if (isEatEnd) {
+					this.#cache.push('')
+					isEatEnd = false
 				}
-				this.#pushLine()
-			} else if (char === '\r') {
-				if (!this.#isEmptyLine) {
-					this.#prevIsBlock = false
-				}
-				if (this.peek() === '\n') {
-					this.#pushLine()
+				this.#pushLine(curLine, isAppend)
+				resetLine()
+				if (char === '\r' && this.peek() === '\n') {
 					this.goNext()
 				}
-			} else {
-				if (this.#isEmptyLine && ![' ', '\t'].includes(char)) {
-					this.#isEmptyLine = false
-				}
-				this.#curLine += char
+				continue
 			}
+			isEatEnd = false
+			if (isEmpty && !['\t', ' '].includes(char)) {
+				isEmpty = false
+			}
+			curLine += char
 		}
-		if (!this.#isEmptyLine) {
-			this.#pushLine()
+		if (!isEmpty && curLine) {
+			this.#pushLine(curLine, isAppend)
 		}
 		this.checkStack()
-		return this.#listToStr(this.#lastRenderList)
+		return this.#cache.join('\n')
 	}
 
 	protected skipBlock(token: BtplToken): string {
@@ -143,19 +138,7 @@ export class RenderParser extends Parser<string> {
 				if (tokenKey === 'end') {
 					if (scope === 0) {
 						this.stack.pop()
-						const pos = this.pos
-						while ([' ', '\t'].includes(this.peek())) {
-							this.goNext()
-						}
-						const char = this.peek()
-						if (char === '\n') {
-							this.goNext()
-						} else if (char === '\r') {
-							this.goNext()
-							if (this.peek() === '\n') this.goNext()
-						} else {
-							this.jump(pos)
-						}
+						this.#clearStatEnd()
 						return ''
 					}
 					scope--
@@ -190,7 +173,7 @@ export class RenderParser extends Parser<string> {
 	@SetStatHook('and')
 	@SetStatHook('or')
 	protected andOrHook(tokens: BtplToken[], ...params: LiteralValue[]) {
-		this.#clearLine()
+		this.#clearStatEnd()
 		const isAnd = tokens[1][0] === 'and'
 		const stackToken = tokens[tokens.length - 1]
 		const val = params
@@ -201,17 +184,15 @@ export class RenderParser extends Parser<string> {
 
 	@SetStatHook('if')
 	protected ifStatHook(tokens: BtplToken[], cond: LiteralValue) {
-		this.#clearLine()
+		this.#clearStatEnd()
 		const stackToken = tokens[tokens.length - 1]
 		const val = this.#getValueByConfig(cond, 'boolean')
-		const res = val ? this.parseBlock(true) : this.skipBlock(stackToken)
-		return res
+		return val ? this.parseBlock(true) : this.skipBlock(stackToken)
 	}
 
 	@SetStatHook('for')
 	protected forStatHook(tokens: BtplToken[], list: LiteralValue) {
-		this.#clearLine()
-		let result = ''
+		this.#clearStatEnd()
 		const stackToken = tokens[tokens.length - 1]
 		const val = this.#getValueByConfig(list, 'object')
 		const curForIndex = this.#forStack.length
@@ -219,6 +200,7 @@ export class RenderParser extends Parser<string> {
 			return this.skipBlock(stackToken)
 		}
 		const startPos = this.pos
+		let result = ''
 		this.#forStack.push('')
 		for (let i = 0; i < val.length; i++) {
 			let item = val[i]
@@ -240,7 +222,7 @@ export class RenderParser extends Parser<string> {
 
 	@SetStatHook('end')
 	protected endStatHook(_: BtplToken[], { token }: LiteralValue) {
-		this.#clearLine()
+		this.#clearStatEnd()
 		if (token[0].startsWith('for')) {
 			if (this.#forStack.length === 0) {
 				throw new XiuParserError('$1循环错误', token)
