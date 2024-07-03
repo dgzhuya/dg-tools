@@ -20,6 +20,7 @@ export class FormatParser extends Parser<string> {
 				if (['if', 'for', 'and', 'or', 'end'].includes(key)) {
 					if (!isEmpty) {
 						this.#formatList.push(curLine)
+						isEmpty = true
 					}
 					curLine = ''
 					this.#formatList.push(stat || '')
