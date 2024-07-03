@@ -2,16 +2,8 @@ import { Parser } from '.'
 import { BtplToken, LiteralValue } from './types'
 import { SetStatHook, concatToken, concatValue } from './utils'
 
-export class FormatParser extends Parser {
-	#curLine = ''
-	#isEmptyLine = true
+export class FormatParser extends Parser<string> {
 	#formatList: string[] = []
-
-	#pushLine() {
-		this.#formatList.push(this.#curLine)
-		this.#curLine = ''
-		this.#isEmptyLine = true
-	}
 
 	format() {
 		this.parseBlock()
@@ -19,33 +11,46 @@ export class FormatParser extends Parser {
 	}
 
 	protected parseBlock() {
+		let curLine = ''
+		let isEmpty = true
 		while (this.hasNext()) {
 			let char = this.next()
 			if (this.isStat(char)) {
-				this.parseStat()
-			} else if (char === '\n') {
-				this.#pushLine()
-			} else if (char === '\r') {
-				this.#pushLine()
-				if (this.peek() === '\n') {
+				const [key, stat] = this.parseStat()
+				if (['if', 'for', 'and', 'or', 'end'].includes(key)) {
+					if (!isEmpty) {
+						this.#formatList.push(curLine)
+					}
+					curLine = ''
+					this.#formatList.push(stat || '')
+					continue
+				}
+				curLine += stat
+				continue
+			}
+			if (['\n', '\r'].includes(char)) {
+				this.#formatList.push(curLine)
+				curLine = ''
+				isEmpty = true
+				if (char === '\r' && this.peek() === '\n') {
 					this.goNext()
 				}
-			} else {
-				if (this.#isEmptyLine && ![' ', '\t'].includes(char)) {
-					this.#isEmptyLine = false
-				}
-				this.#curLine += char
+				continue
 			}
+			if (isEmpty && !['\t', ' '].includes(char)) {
+				isEmpty = false
+			}
+			curLine += char
 		}
-		if (!this.#isEmptyLine) {
-			this.#pushLine()
+		if (curLine) {
+			this.#formatList.push(curLine)
 		}
 		this.checkStack()
 	}
 
 	@SetStatHook('simple')
 	protected simpleHook(_: BtplToken[], value: LiteralValue) {
-		this.#addBrace(concatValue(value)[0], true)
+		return this.#addBrace(concatValue(value)[0], true)
 	}
 
 	@SetStatHook('or')
@@ -58,50 +63,43 @@ export class FormatParser extends Parser {
 		const name = concatToken(token, op)[0]
 		const args = params.map(p => concatValue(p)[0]).join(', ')
 		const isSimple = !['and', 'or'].includes(token[0])
-		this.#addBrace(name + args + ']', isSimple)
+		return this.#addBrace(name + args + ']', isSimple)
 	}
 
 	@SetStatHook('for')
 	protected forStatHook([_, [key]]: BtplToken[], { token }: LiteralValue) {
-		this.#addBrace(`${key}@${token[0]}`)
+		return this.#addBrace(`${key}@${token[0]}`)
 	}
 
 	@SetStatHook('if')
 	protected ifStatHook(_: BtplToken[], cond: LiteralValue) {
-		this.#addBrace(`if@${concatValue(cond)[0]}`)
+		return this.#addBrace(`if@${concatValue(cond)[0]}`)
 	}
 
 	@SetStatHook('end')
 	protected endStatHook() {
-		this.#addBrace('end@', false, 0)
+		return this.#addBrace('end@', false, 0)
 	}
 
 	#addBrace(content: string, isSimple = false, startPos = 1) {
 		if (isSimple) {
-			this.#curLine += `{% ${content} %}`
-			return
+			return `{% ${content} %}`
 		}
-		if (this.#isEmptyLine) {
-			this.#curLine = ''
-		} else {
-			this.#pushLine()
-		}
+
 		const tabChar = '\t'.repeat(this.stack.length - startPos)
-		this.#curLine += tabChar
-		this.#curLine += `{% ${content} %}`
 		const pos = this.pos
 		while ([' ', '\t'].includes(this.peek())) {
 			this.goNext()
 		}
 		const char = this.peek()
-		if (char === '\n') {
+		if (['\n', '\r'].includes(char)) {
 			this.goNext()
-		} else if (char === '\r') {
-			this.goNext()
-			if (this.peek() === '\n') this.goNext()
+			if (char === '\r' && this.peek() === '\n') {
+				this.goNext()
+			}
 		} else {
 			this.jump(pos)
 		}
-		this.#pushLine()
+		return tabChar + `{% ${content} %}`
 	}
 }
