@@ -227,20 +227,20 @@ export abstract class Parser<T = void> {
 		})
 	}
 
-	protected parseStat(): [boolean, T | void] {
+	protected parseStat(): [string, T | void] {
 		const prefix = this.#lexer.verifyNextToken('{%')
 		this.#lexer.skipEmpty()
 		if (this.#lexer.checkToken('$')) {
-			return [false, this.#parseSimpleStat(prefix)]
+			return ['', this.#parseSimpleStat(prefix)]
 		}
 		const token = this.#lexer.nextToken()
 		const parseFunc = this.#keywords[token[0]]
-		if (parseFunc) return [token[0] === 'end', parseFunc(prefix, token)]
+		if (parseFunc) return [token[0], parseFunc(prefix, token)]
 
 		if (this.#lexer.checkToken('@')) {
-			return [false, this.#parseFuncStat(prefix, token)]
+			return ['', this.#parseFuncStat(prefix, token)]
 		}
-		return [false, this.#parseSimpleStat(prefix, token)]
+		return ['', this.#parseSimpleStat(prefix, token)]
 	}
 
 	protected codeSkip() {
