@@ -72,6 +72,7 @@ export class RenderParser extends Parser<string> {
 		let curLine = ''
 		let isEmpty = true
 		let isAppend = false
+		let insertLine = false
 
 		const resetLine = () => {
 			curLine = ''
@@ -84,9 +85,14 @@ export class RenderParser extends Parser<string> {
 				const [key, stat] = this.parseStat()
 				if (!key) {
 					isEatEnd = false
+					insertLine = false
 				}
 
 				if (['if', 'for', 'and', 'or', 'end'].includes(key)) {
+					if (insertLine && isEmpty) {
+						this.#cache.push('')
+						insertLine = false
+					}
 					isAppend = true
 					if (isEmpty) curLine = ''
 					curLine += stat || ''
@@ -106,7 +112,7 @@ export class RenderParser extends Parser<string> {
 			}
 			if (['\r', '\n'].includes(char)) {
 				if (isEatEnd) {
-					this.#cache.push('')
+					insertLine = true
 					isEatEnd = false
 				}
 				this.#pushLine(curLine, isAppend)
