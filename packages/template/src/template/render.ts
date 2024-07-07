@@ -93,10 +93,10 @@ export class RenderParser extends Parser<string> {
 						this.#cache.push('')
 						insertLine = false
 					}
-					isAppend = true
+					isAppend = isEmpty
 					if (isEmpty) curLine = ''
 					curLine += stat || ''
-					this.#pushLine(curLine, true)
+					this.#pushLine(curLine, isAppend)
 					isEmpty = true
 					curLine = ''
 					if (key === 'end') {
